@@ -59,7 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CrossLinkConstants.cs" />
+    <Compile Include="Constants\CrossLinkConstants.cs" />
     <Compile Include="Data\AminoAcid.cs" />
     <Compile Include="Data\CrossLink.cs" />
     <Compile Include="Data\LcImsMsFeature.cs" />
@@ -70,6 +70,7 @@
     <Compile Include="Util\SequenceUtil.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CrossLinkingImsHelpFile.shfbproj" />
     <Content Include="xerces-c_2_7.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

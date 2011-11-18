@@ -4,18 +4,58 @@ using ProteinDigestionSimulator;
 
 namespace CrossLinkingIMS.Data
 {
-	// TODO: Explain the different ModTypes
-	public enum ModType { None, Zero, One, Two, ZeroOne, ZeroTwo };
+	/// <summary>
+	/// Specifies the type of Modification of the cross-link
+	/// </summary>
+	public enum ModType
+	{
+		/// <summary>Unmodified peptide</summary>
+		None,
+
+		/// <summary></summary>
+		Zero, 
+
+		/// <summary></summary>
+		One,
+
+		/// <summary></summary>
+		Two,
+
+		/// <summary>A mix of Type 0 and Type 1 Modifications</summary>
+		ZeroOne,
+
+		/// <summary>A mix of Type 0 and Type 2 Modifications</summary>
+		ZeroTwo
+	};
 
 	/// <summary>
 	/// Stores information about a single cross-link for either 1 or 2 peptides.
 	/// </summary>
 	public class CrossLink
 	{
+		/// <summary>
+		/// The first Peptide of the cross-link.
+		/// </summary>
 		public clsInSilicoDigest.PeptideInfoClass PeptideOne { get; private set; }
+
+		/// <summary>
+		/// The second peptide of the cross-link. May be null.
+		/// </summary>
 		public clsInSilicoDigest.PeptideInfoClass PeptideTwo { get; private set; }
+
+		/// <summary>
+		/// The monoisotopic mass of the un-shifted cross-link, in daltons.
+		/// </summary>
 		public double Mass { get; private set; }
+
+		/// <summary>
+		/// The mod type of the cross link. See CrossLink.ModType for explaination of mod types.
+		/// </summary>
 		public ModType ModType { get; private set; }
+
+		/// <summary>
+		/// The List of possible shifts in mass for the cross-link to exhibit.
+		/// </summary>
 		public List<double> MassShiftList { get; private set; }
 
 		/// <summary>
@@ -37,6 +77,12 @@ namespace CrossLinkingIMS.Data
 			if (peptideTwo != null) this.MassShiftList.Add(SequenceUtil.CalculateMassShift(peptideTwo.SequenceOneLetter));
 		}
 
+		/// <summary>
+		/// Determines whether the specified Object is equal to the current Object.
+		/// Equality is determined by Mass and ModType.
+		/// </summary>
+		/// <param name="obj">The specified Object.</param>
+		/// <returns>true if the objects are equal, false otherwise</returns>
 		public override bool Equals(object obj)
 		{
 			if (ReferenceEquals(null, obj)) return false;
@@ -45,6 +91,12 @@ namespace CrossLinkingIMS.Data
 			return Equals((CrossLink) obj);
 		}
 
+		/// <summary>
+		/// Determines whether the specified CrossLink Object is equal to the current CrossLink Object.
+		/// Equality is determined by Mass and ModType.
+		/// </summary>
+		/// <param name="other">The specified CrossLink Object.</param>
+		/// <returns>true if the objects are equal, false otherwise</returns>
 		public bool Equals(CrossLink other)
 		{
 			if (ReferenceEquals(null, other)) return false;
