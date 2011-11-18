@@ -129,7 +129,7 @@ namespace CrossLinkingIMS.Util
 				numNitrogen += aminoAcid.NumNitrogen;
 			}
 
-			return (numCarbon * (13.00335484 - 12.0)) + (numNitrogen * (15.00010897 - 14.00307401));
+			return (numCarbon * (IsotopeConstants.CARBON_13_ISOTOPE - IsotopeConstants.CARBON_12_ISOTOPE)) + (numNitrogen * (IsotopeConstants.NITROGEN_15_ISOTOPE - IsotopeConstants.NITROGEN_14_ISOTOPE));
 		}
 
 		/// <summary>
@@ -222,10 +222,12 @@ namespace CrossLinkingIMS.Util
 					{
 						double modifiedMass = firstPeptide.Mass + secondPeptide.Mass + (i * CrossLinkConstants.LINKER_MASS) + (j * CrossLinkConstants.DEAD_END_MASS);
 
+						// Type 2
 						if(j == 0)
 						{
 							crossLinkList.Add(new CrossLink(firstPeptide, secondPeptide, modifiedMass, ModType.Two));
 						}
+						// Type 2 and Type 0 mix
 						else
 						{
 							crossLinkList.Add(new CrossLink(firstPeptide, secondPeptide, modifiedMass, ModType.ZeroTwo));
@@ -236,7 +238,6 @@ namespace CrossLinkingIMS.Util
 
 			return crossLinkList;
 		}
-
 		
 	}
 }

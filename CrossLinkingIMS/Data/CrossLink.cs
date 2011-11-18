@@ -5,20 +5,21 @@ using ProteinDigestionSimulator;
 namespace CrossLinkingIMS.Data
 {
 	/// <summary>
-	/// Specifies the type of Modification of the cross-link
+	/// Specifies the type of Modification of the cross-link.
+	/// See Figure 2 of http://www.springerlink.com/content/g31r736110816733/fulltext.pdf for more information.
 	/// </summary>
 	public enum ModType
 	{
 		/// <summary>Unmodified peptide</summary>
 		None,
 
-		/// <summary></summary>
-		Zero, 
+		/// <summary>One end of cross-linking reagent reacted with the protein, the other reacted with water (often called a “dead-end”).</summary>
+		Zero,
 
-		/// <summary></summary>
+		/// <summary>Each ends of the reagent reacted with the same peptide (intrapeptide cross-link).</summary>
 		One,
 
-		/// <summary></summary>
+		/// <summary>Each end of the reagent reacted with a different peptide (interpeptide cross-link).</summary>
 		Two,
 
 		/// <summary>A mix of Type 0 and Type 1 Modifications</summary>
