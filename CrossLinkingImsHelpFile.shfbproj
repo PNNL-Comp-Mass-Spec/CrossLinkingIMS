@@ -19,9 +19,10 @@
     <HtmlHelpName>Documentation</HtmlHelpName>
     <Language>en-US</Language>
     <DocumentationSources>
-      <DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.exe" />
-      <DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.xml" />
-    </DocumentationSources>
+      <DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.dll" />
+<DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.xml" />
+<DocumentationSource sourceFile="CrossLinkingIMSConsole\bin\x86\Release\CrossLinkingIMSConsole.exe" />
+<DocumentationSource sourceFile="CrossLinkingIMSConsole\bin\x86\Release\CrossLinkingIMSConsole.xml" /></DocumentationSources>
     <HtmlHelp1xCompilerPath>
     </HtmlHelp1xCompilerPath>
     <HtmlHelp2xCompilerPath>
