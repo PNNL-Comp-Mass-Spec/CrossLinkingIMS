@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
+using CrossLinkingIMS.Constants;
 using CrossLinkingIMS.Data;
 using CrossLinkingIMS.IO;
 using CrossLinkingIMS.Util;
@@ -16,13 +16,12 @@ namespace CrossLinkingIMS
 {
 	public class ConsoleApplication
 	{
-		private static double MASS_TOLERANCE_BASE = 20;
-		private const int PPM_DIVISOR = 1000000;
-		private const double MASS_OF_PROTON = 1.00727649;
-
 		static void Main(string[] args)
 		{
 			BasicTFF msFeatureFinder = new BasicTFF();
+
+			// Hard-coded mass tolerance
+			const double massToleranceBase = 20;
 
 			// Hard-coded Protein Sequence
 			const string proteinSequence = "AEQVSKQEISHFKLVKVGTINVSQSGGQISSPSDLREKLSELADAKGGKYYHIIAAREHGPNFEAVAEVYNDATKLEHHHHHH";
@@ -31,7 +30,7 @@ namespace CrossLinkingIMS
 			IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequence);
 
 			// Find all possible cross links from the peptide list
-			IEnumerable<CrossLink> crossLinkEnumerable = SequenceUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequence);
+			IEnumerable<CrossLink> crossLinkEnumerable = CrossLinkUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequence);
 			IEnumerable<CrossLink> orderedCrossLinkEnumerable = crossLinkEnumerable.OrderBy(o => o.Mass);
 
 			// Read in LC-IMS-MS Features
@@ -69,7 +68,7 @@ namespace CrossLinkingIMS
 			foreach (CrossLink crossLink in orderedCrossLinkEnumerable)
 			{
 				// Calculate mass tolerance to use for binary search
-				double massTolerance = MASS_TOLERANCE_BASE * crossLink.Mass / PPM_DIVISOR;
+				double massTolerance = massToleranceBase * crossLink.Mass / GeneralConstants.PPM_DIVISOR;
 
 				LcImsMsFeature lowFeature = new LcImsMsFeature { MassMonoisotopic = crossLink.Mass - massTolerance };
 				LcImsMsFeature highFeature = new LcImsMsFeature { MassMonoisotopic = crossLink.Mass + massTolerance };
@@ -90,7 +89,7 @@ namespace CrossLinkingIMS
 					{
 						CrossLinkResult crossLinkResult = new CrossLinkResult(crossLink, feature, currentScanLc);
 
-						List<IPeak> candidatePeaks = FindCandidatePeaks(peakList, feature.MzMonoisotopic, currentScanLc, feature.ScanImsRep);
+						List<IPeak> candidatePeaks = PeakUtil.FindCandidatePeaks(peakList, feature.MzMonoisotopic, currentScanLc, feature.ScanImsRep);
 						List<double> massShiftList = crossLink.MassShiftList;
 						List<double> shiftedMassList = new List<double>();
 
@@ -119,7 +118,7 @@ namespace CrossLinkingIMS
 						// Search for shifted mass values in Isotopic Peaks
 						foreach (double shiftedMass in shiftedMassList)
 						{
-							double shiftedMz = (shiftedMass/feature.ChargeState) + MASS_OF_PROTON;
+							double shiftedMz = (shiftedMass/feature.ChargeState) + GeneralConstants.MASS_OF_PROTON;
 
 							// Create theoretical Isotopic Peaks that will later form a theoretical Isotopic Profile
 							List<MSPeak> theoreticalPeakList = new List<MSPeak> {new MSPeak {XValue = shiftedMz, Height = 1}};
@@ -178,119 +177,7 @@ namespace CrossLinkingIMS
 				}
 			}
 
-			OutputCrossLinkResults(crossLinkResultList);
-		}
-
-		/// <summary>
-		/// Use binary search to find all Isotopic Peaks we want to consider when looking for the cross-links shifts.
-		/// </summary>
-		/// <param name="completePeakList">The complete list of Isotopic Peaks that we will use for searching.</param>
-		/// <param name="minimumMz">The minimum m/z value to consider.</param>
-		/// <param name="scanLc">The LC Scan to consider.</param>
-		/// <param name="scanIms">The IMS Scan to consider.</param>
-		/// <returns>All peaks that are in the given LC Scan and IMS Scan and m/z >= thegiven m/z of the Feature.</returns>
-		private static List<IPeak> FindCandidatePeaks(List<MSPeakResult> completePeakList, double minimumMz, int scanLc, int scanIms)
-		{
-			// Set up Peak Comparer to use for binary search later on
-			AnonymousComparer<MSPeakResult> peakComparer = new AnonymousComparer<MSPeakResult>((x, y) => x.Frame_num != y.Frame_num ? x.Frame_num.CompareTo(y.Frame_num) : x.Scan_num != y.Scan_num ? x.Scan_num.CompareTo(y.Scan_num) : x.XValue.CompareTo(y.XValue));
-
-			MSPeak msPeakLow = new MSPeak(minimumMz, 1, 1, 1);
-			MSPeak msPeakHigh = new MSPeak(0, 1, 1, 1);
-			MSPeakResult lowPeak = new MSPeakResult(1, scanLc, scanIms, msPeakLow);
-			MSPeakResult highPeak = new MSPeakResult(1, scanLc, scanIms + 1, msPeakHigh);
-
-			int lowPeakPosition = completePeakList.BinarySearch(lowPeak, peakComparer);
-			int highPeakPosition = completePeakList.BinarySearch(highPeak, peakComparer);
-
-			lowPeakPosition = lowPeakPosition < 0 ? ~lowPeakPosition : lowPeakPosition;
-			highPeakPosition = highPeakPosition < 0 ? ~highPeakPosition : highPeakPosition;
-
-			List<IPeak> candidatePeaks = new List<IPeak>();
-
-			for (int j = lowPeakPosition; j < highPeakPosition; j++)
-			{
-				MSPeakResult msPeakResult = completePeakList[j];
-				MSPeak msPeak = new MSPeak(msPeakResult.XValue, msPeakResult.Height, msPeakResult.Width, 1);
-				candidatePeaks.Add(msPeak);
-			}
-
-			return candidatePeaks;
-		} 
-
-		/// <summary>
-		/// Writes the results of cross-link searching to a csv file.
-		/// </summary>
-		/// <param name="crossLinkResultEnumerable">The List of CrossLinkResults objects</param>
-		private static void OutputCrossLinkResults(IEnumerable<CrossLinkResult> crossLinkResultEnumerable)
-		{
-			TextWriter crossLinkWriter = new StreamWriter("crossLinkResults.csv");
-			crossLinkWriter.WriteLine("Index,Pep1,Pep2,ModType,TheoreticalMass,FeatureMass,FeatureMz,ShiftedMassPep1,ShiftedMzPep1,ShiftedMassPep2,ShiftedMzPep2,ShiftedMassBoth,ShiftedMzBoth,ChargeState,LCScans,IMSScan,DriftTime,Abundance,FeatureIndex");
-			int index = 0;
-
-			var groupByCrossLinkQuery = crossLinkResultEnumerable.GroupBy(crossLinkResult => new { crossLinkResult.CrossLink, 
-																								   crossLinkResult.LcImsMsFeature.FeatureId,
-																								   crossLinkResult.MassShiftResults })
-																 .Select(group => group.OrderBy(crossLinkResult => crossLinkResult.ScanLc) );
-
-			foreach (var group in groupByCrossLinkQuery)
-			{
-				CrossLinkResult crossLinkResult = group.First();
-				CrossLink crossLink = crossLinkResult.CrossLink;
-				LcImsMsFeature feature = crossLinkResult.LcImsMsFeature;
-
-				double featureMass = feature.MassMonoisotopic;
-				double featureMz = (featureMass / feature.ChargeState) + MASS_OF_PROTON;
-
-				StringBuilder outputLine = new StringBuilder();
-				outputLine.Append(index++ + ",");
-				outputLine.Append(crossLink.PeptideOne.SequenceOneLetter + ",");
-				outputLine.Append((crossLink.PeptideTwo != null ? crossLink.PeptideTwo.SequenceOneLetter : "null") + ",");
-				outputLine.Append(crossLink.ModType + ",");
-				outputLine.Append(crossLink.Mass + ",");
-				outputLine.Append(featureMass + ",");
-				outputLine.Append(featureMz + ",");
-
-				// Iterate over the results for each mass-shift
-				foreach (KeyValuePair<double, bool> massShiftResult in crossLinkResult.MassShiftResults.KvpList)
-				{
-					// If the mass-shift value was found
-					if (massShiftResult.Value)
-					{
-						double shiftMass = massShiftResult.Key;
-						double shiftMz = (shiftMass / feature.ChargeState) + MASS_OF_PROTON;
-
-						// Output information about the mass-shift
-						outputLine.Append(shiftMass + "," + shiftMz + ",");
-					}
-					else
-					{
-						outputLine.Append("0,0,");
-					}
-
-					// If only 1 mass-shift, then the other 2 are N/A
-					if (crossLinkResult.MassShiftResults.KvpList.Count == 1)
-					{
-						outputLine.Append("N/A,N/A,N/A,N/A,");
-					}
-				}
-
-				outputLine.Append(feature.ChargeState + ",");
-
-				foreach (CrossLinkResult individualCrossLinkResult in group)
-				{
-					outputLine.Append(individualCrossLinkResult.ScanLc + ";");
-				}
-				outputLine.Append(",");
-
-				outputLine.Append(feature.ScanImsRep + ",");
-				outputLine.Append(feature.DriftTime + ",");
-				outputLine.Append(feature.Abundance + ",");
-				outputLine.Append(feature.FeatureId + "\n");
-
-				crossLinkWriter.Write(outputLine);
-			}
-
-			crossLinkWriter.Close();
+			CrossLinkUtil.OutputCrossLinkResults(crossLinkResultList);
 		}
 	}
 }

@@ -1,5 +1,4 @@
-﻿
-namespace CrossLinkingIMS.Constants
+﻿namespace CrossLinkingIMS.Constants
 {
 	/// <summary>
 	/// Class for storing a few constants associated with cross-links.

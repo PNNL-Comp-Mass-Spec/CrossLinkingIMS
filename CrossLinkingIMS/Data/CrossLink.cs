@@ -74,8 +74,8 @@ namespace CrossLinkingIMS.Data
 			this.ModType = modType;
 
 			this.MassShiftList = new List<double>();
-			if (peptideOne != null) this.MassShiftList.Add(SequenceUtil.CalculateMassShift(peptideOne.SequenceOneLetter));
-			if (peptideTwo != null) this.MassShiftList.Add(SequenceUtil.CalculateMassShift(peptideTwo.SequenceOneLetter));
+			if (peptideOne != null) this.MassShiftList.Add(CrossLinkUtil.CalculateMassShift(peptideOne.SequenceOneLetter));
+			if (peptideTwo != null) this.MassShiftList.Add(CrossLinkUtil.CalculateMassShift(peptideTwo.SequenceOneLetter));
 		}
 
 		/// <summary>

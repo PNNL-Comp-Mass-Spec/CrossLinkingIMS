@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants\CrossLinkConstants.cs" />
+    <Compile Include="Constants\GeneralConstants.cs" />
     <Compile Include="Constants\IsotopeConstants.cs" />
     <Compile Include="Data\AminoAcid.cs" />
     <Compile Include="Data\CrossLink.cs" />
@@ -70,6 +71,8 @@
     <Compile Include="ConsoleApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util\AnonymousComparer.cs" />
+    <Compile Include="Util\CrossLinkUtil.cs" />
+    <Compile Include="Util\PeakUtil.cs" />
     <Compile Include="Util\SequenceUtil.cs" />
   </ItemGroup>
   <ItemGroup>
