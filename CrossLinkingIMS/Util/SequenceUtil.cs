@@ -201,9 +201,15 @@ namespace CrossLinkingIMS.Util
 				string secondPeptideString = secondPeptide.SequenceOneLetter.Substring(0, secondPeptide.SequenceOneLetter.Length - 1);
 
 				// Then count the number of Lysines
-				int numLysines = 0;
-				numLysines += firstPeptideString.Count(c => c == 'K');
-				numLysines += secondPeptideString.Count(c => c == 'K');
+				int firstPeptideNumLysines = firstPeptideString.Count(c => c == 'K');
+				int secondPeptideNumLysines = secondPeptideString.Count(c => c == 'K');
+				int numLysines = firstPeptideNumLysines + secondPeptideNumLysines;
+
+				// If either peptide does not have a Lysine, then no cross-link is possible; exit
+				if (firstPeptideNumLysines == 0 || secondPeptideNumLysines == 0)
+				{
+					return crossLinkList;
+				}
 
 				// If we are dealing with the peptide located at the very beginning of the protein sequence, then pretend we have an extra Lysine since we can cross-link with the first amino acid
 				if (proteinSequence.StartsWith(firstPeptideString))
