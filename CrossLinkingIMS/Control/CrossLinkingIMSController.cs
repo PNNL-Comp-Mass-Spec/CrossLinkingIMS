@@ -12,11 +12,11 @@ using DeconTools.Backend.Data;
 using DeconTools.Backend.ProcessingTasks.TargetedFeatureFinders;
 using ProteinDigestionSimulator;
 
-namespace CrossLinkingIMS
+namespace CrossLinkingIMS.Control
 {
-	public class ConsoleApplication
+	public class CrossLinkingIMSController
 	{
-		static void Main(string[] args)
+		public void Execute()
 		{
 			BasicTFF msFeatureFinder = new BasicTFF();
 
@@ -38,8 +38,8 @@ namespace CrossLinkingIMS
 			List<LcImsMsFeature> featureList = LcImsMsFeatureReader.ReadFile(featureFile);
 
 			var sortFeatureListQuery = from feature in featureList
-			                           orderby feature.MassMonoisotopic
-			                           select feature;
+									   orderby feature.MassMonoisotopic
+									   select feature;
 
 			featureList = sortFeatureListQuery.ToList();
 
@@ -48,7 +48,7 @@ namespace CrossLinkingIMS
 
 			// Read in Isotopic Peaks (not Isotopic Profile)
 			FileInfo peaksFile = new FileInfo("SrfN_NC50_IMS_7Sep11_Roc_11-05-30_peaks.txt");
-			BackgroundWorker backgroundWorker = new BackgroundWorker {WorkerReportsProgress = true, WorkerSupportsCancellation = true};
+			BackgroundWorker backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
 			PeakImporterFromText peakImporter = new PeakImporterFromText(peaksFile.FullName, backgroundWorker);
 			List<IPeak> iPeakList = new List<IPeak>();
 			peakImporter.ImportUIMFPeaks(iPeakList);
@@ -118,29 +118,29 @@ namespace CrossLinkingIMS
 						// Search for shifted mass values in Isotopic Peaks
 						foreach (double shiftedMass in shiftedMassList)
 						{
-							double shiftedMz = (shiftedMass/feature.ChargeState) + GeneralConstants.MASS_OF_PROTON;
+							double shiftedMz = (shiftedMass / feature.ChargeState) + GeneralConstants.MASS_OF_PROTON;
 
 							// Create theoretical Isotopic Peaks that will later form a theoretical Isotopic Profile
-							List<MSPeak> theoreticalPeakList = new List<MSPeak> {new MSPeak {XValue = shiftedMz, Height = 1}};
+							List<MSPeak> theoreticalPeakList = new List<MSPeak> { new MSPeak { XValue = shiftedMz, Height = 1 } };
 							for (double k = 1; k < 4; k++)
 							{
-								theoreticalPeakList.Add(new MSPeak {XValue = shiftedMz + (k*1.003/feature.ChargeState), Height = (float) (1.0 - (k/4))});
-								theoreticalPeakList.Add(new MSPeak {XValue = shiftedMz - (k*1.003/feature.ChargeState), Height = (float) (1.0 - (k/4))});
+								theoreticalPeakList.Add(new MSPeak { XValue = shiftedMz + (k * 1.003 / feature.ChargeState), Height = (float)(1.0 - (k / 4)) });
+								theoreticalPeakList.Add(new MSPeak { XValue = shiftedMz - (k * 1.003 / feature.ChargeState), Height = (float)(1.0 - (k / 4)) });
 							}
 
 							// Sort peaks by m/z
 							var sortPeaksQuery = from peak in theoreticalPeakList
-							                     orderby peak.XValue
-							                     select peak;
+												 orderby peak.XValue
+												 select peak;
 
 							// Create a theoretical Isotopic Profile for DeconTools to search for
 							IsotopicProfile isotopicProfile = new IsotopicProfile
-							                                  	{
-							                                  		MonoIsotopicMass = shiftedMass,
-							                                  		MonoPeakMZ = shiftedMz,
-							                                  		ChargeState = feature.ChargeState,
-							                                  		Peaklist = sortPeaksQuery.ToList()
-							                                  	};
+							{
+								MonoIsotopicMass = shiftedMass,
+								MonoPeakMZ = shiftedMz,
+								ChargeState = feature.ChargeState,
+								Peaklist = sortPeaksQuery.ToList()
+							};
 
 							// Search for the theoretical Isotopic Profile
 							IsotopicProfile foundProfile = msFeatureFinder.FindMSFeature(candidatePeaks, isotopicProfile, 20, false);
@@ -153,16 +153,16 @@ namespace CrossLinkingIMS
 							{
 								foreach (MSPeak msPeak in sortPeaksQuery)
 								{
-									msPeak.XValue -= (1.003/feature.ChargeState);
+									msPeak.XValue -= (1.003 / feature.ChargeState);
 								}
 
 								isotopicProfile = new IsotopicProfile
-								                  	{
-								                  		MonoIsotopicMass = shiftedMass - 1.003,
-								                  		MonoPeakMZ = shiftedMz - (1.003/feature.ChargeState),
-								                  		ChargeState = feature.ChargeState,
-								                  		Peaklist = sortPeaksQuery.ToList()
-								                  	};
+								{
+									MonoIsotopicMass = shiftedMass - 1.003,
+									MonoPeakMZ = shiftedMz - (1.003 / feature.ChargeState),
+									ChargeState = feature.ChargeState,
+									Peaklist = sortPeaksQuery.ToList()
+								};
 
 								foundProfile = msFeatureFinder.FindMSFeature(candidatePeaks, isotopicProfile, 20, false);
 							}
@@ -177,6 +177,7 @@ namespace CrossLinkingIMS
 				}
 			}
 
+			// Output the results
 			CrossLinkUtil.OutputCrossLinkResults(crossLinkResultList);
 		}
 	}

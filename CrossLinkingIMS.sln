@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossLinkingIMS", "CrossLinkingIMS\CrossLinkingIMS.csproj", "{D348FCF8-E9FD-49B4-A781-6D7DF7F1EBC9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossLinkingIMSConsole", "CrossLinkingIMSConsole\CrossLinkingIMSConsole.csproj", "{DA2652BA-2C2D-4AD5-B829-54424DE5C306}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{D348FCF8-E9FD-49B4-A781-6D7DF7F1EBC9}.Debug|x86.Build.0 = Debug|x86
 		{D348FCF8-E9FD-49B4-A781-6D7DF7F1EBC9}.Release|x86.ActiveCfg = Release|x86
 		{D348FCF8-E9FD-49B4-A781-6D7DF7F1EBC9}.Release|x86.Build.0 = Release|x86
+		{DA2652BA-2C2D-4AD5-B829-54424DE5C306}.Debug|x86.ActiveCfg = Debug|x86
+		{DA2652BA-2C2D-4AD5-B829-54424DE5C306}.Debug|x86.Build.0 = Debug|x86
+		{DA2652BA-2C2D-4AD5-B829-54424DE5C306}.Release|x86.ActiveCfg = Release|x86
+		{DA2652BA-2C2D-4AD5-B829-54424DE5C306}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
