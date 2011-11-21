@@ -63,7 +63,9 @@
     <Compile Include="Constants\IsotopeConstants.cs" />
     <Compile Include="Data\AminoAcid.cs" />
     <Compile Include="Data\CrossLink.cs" />
+    <Compile Include="Data\CrossLinkResult.cs" />
     <Compile Include="Data\LcImsMsFeature.cs" />
+    <Compile Include="Data\MassShiftResult.cs" />
     <Compile Include="IO\LcImsMsFeatureReader.cs" />
     <Compile Include="ConsoleApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
