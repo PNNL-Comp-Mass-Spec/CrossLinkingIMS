@@ -20,7 +20,8 @@
     <Language>en-US</Language>
     <DocumentationSources>
       <DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.exe" />
-<DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.xml" /></DocumentationSources>
+      <DocumentationSource sourceFile="CrossLinkingIMS\bin\x86\Release\CrossLinkingIMS.xml" />
+    </DocumentationSources>
     <HtmlHelp1xCompilerPath>
     </HtmlHelp1xCompilerPath>
     <HtmlHelp2xCompilerPath>
