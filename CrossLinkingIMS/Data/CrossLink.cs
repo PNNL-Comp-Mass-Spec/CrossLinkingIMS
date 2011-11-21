@@ -112,5 +112,10 @@ namespace CrossLinkingIMS.Data
 				return (this.Mass.GetHashCode()*397) ^ this.ModType.GetHashCode();
 			}
 		}
+
+		public override string ToString()
+		{
+			return string.Format("PeptideOne: {0}, PeptideTwo: {1}, ModType: {2}", PeptideOne.SequenceOneLetter, PeptideTwo != null ? PeptideTwo.SequenceOneLetter : "", ModType);
+		}
 	}
 }
