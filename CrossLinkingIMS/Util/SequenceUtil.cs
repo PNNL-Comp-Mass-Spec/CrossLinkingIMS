@@ -39,12 +39,7 @@ namespace CrossLinkingIMS.Util
 			};
 
 			parseProteinFile.DigestProteinSequence(proteinSequence, ref peptideArray, digestionOptions, "xlinkProt");
-
-			foreach (clsInSilicoDigest.PeptideInfoClass peptide in peptideArray)
-			{
-				Console.WriteLine(peptide.SequenceOneLetter);
-			}
-
+			
 			return peptideArray;
 		}
 	}

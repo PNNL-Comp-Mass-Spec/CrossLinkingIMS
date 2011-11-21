@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("PNNL")]
 [assembly: AssemblyProduct("CrossLinkingIMSConsole")]
-[assembly: AssemblyCopyright("Copyright © PNNL 2011")]
+[assembly: AssemblyCopyright("Copyright � PNNL 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -26,11 +26,9 @@ using System.Runtime.InteropServices;
 //
 //      Major Version
 //      Minor Version 
+//      SVN Revision
 //      Build Number
-//      Revision
 //
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+// To edit the assembly version, make sure to edit the AssemblyInfoTemplate.cs file
+// The template file will overwrite the AssemblyInfo.cs file every build
+[assembly: AssemblyVersion("1.1.$WCREV$.*")]

@@ -14,46 +14,74 @@ using ProteinDigestionSimulator;
 
 namespace CrossLinkingIMS.Control
 {
-	public class CrossLinkingIMSController
+	/// <summary>
+	/// A class for various ways of executing the cross-linking IMS code.
+	/// </summary>
+	public class CrossLinkingImsController
 	{
-		public void Execute()
+		/// <summary>
+		/// Executes the cross-link search for LC-IMS-TOF data.
+		/// </summary>
+		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
+		/// <param name="proteinSequenceEnumerable">IEnumerable of protein sequences, as strings.</param>
+		/// <param name="featureFile">The FileInfo object for the LC-IMS-MS features file, created by the LC-IMS-MS Feature Finder (email Kevin.Crowell@pnnl.gov for more info)</param>
+		/// <param name="peaksFile">The FileInfo object for the Isotopic Peaks file, created by DeconTools (email Gordon.Slysz@pnnl.gov for more info)</param>
+		/// <returns>An enumerable of CrossLinkResult objects.</returns>
+		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<string> proteinSequenceEnumerable, FileInfo featureFile, FileInfo peaksFile)
 		{
-			BasicTFF msFeatureFinder = new BasicTFF();
-
-			// Hard-coded mass tolerance
-			const double massToleranceBase = 20;
-
-			// Hard-coded Protein Sequence
-			const string proteinSequence = "AEQVSKQEISHFKLVKVGTINVSQSGGQISSPSDLREKLSELADAKGGKYYHIIAAREHGPNFEAVAEVYNDATKLEHHHHHH";
-
-			// Get a List of Peptides from the Protein Sequence
-			IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequence);
-
-			// Find all possible cross links from the peptide list
-			IEnumerable<CrossLink> crossLinkEnumerable = CrossLinkUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequence);
-			IEnumerable<CrossLink> orderedCrossLinkEnumerable = crossLinkEnumerable.OrderBy(o => o.Mass);
-
 			// Read in LC-IMS-MS Features
-			FileInfo featureFile = new FileInfo("SrfN_NC50_IMS_7Sep11_Roc_11-05-30_LCMSFeatures.txt");
-			List<LcImsMsFeature> featureList = LcImsMsFeatureReader.ReadFile(featureFile);
+			IEnumerable<LcImsMsFeature> featureEnumerable = LcImsMsFeatureReader.ReadFile(featureFile);
 
-			var sortFeatureListQuery = from feature in featureList
+			var sortFeatureListQuery = from feature in featureEnumerable
 									   orderby feature.MassMonoisotopic
 									   select feature;
 
-			featureList = sortFeatureListQuery.ToList();
-
-			// Set up a Feature Comparer to use for binary search later on
-			AnonymousComparer<LcImsMsFeature> featureComparer = new AnonymousComparer<LcImsMsFeature>((x, y) => x.MassMonoisotopic.CompareTo(y.MassMonoisotopic));
+			List<LcImsMsFeature> featureList = sortFeatureListQuery.ToList();
 
 			// Read in Isotopic Peaks (not Isotopic Profile)
-			FileInfo peaksFile = new FileInfo("SrfN_NC50_IMS_7Sep11_Roc_11-05-30_peaks.txt");
 			BackgroundWorker backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
 			PeakImporterFromText peakImporter = new PeakImporterFromText(peaksFile.FullName, backgroundWorker);
 			List<IPeak> iPeakList = new List<IPeak>();
 			peakImporter.ImportUIMFPeaks(iPeakList);
 
 			List<MSPeakResult> peakList = iPeakList.Select(i => (MSPeakResult)i).ToList();
+
+			// Now call the executor that expects the opbjects instead of the file locations
+			return Execute(massToleranceBase, proteinSequenceEnumerable, featureList, peakList);
+		}
+
+		/// <summary>
+		/// Executes the cross-link search for LC-IMS-TOF data.
+		/// </summary>
+		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
+		/// <param name="proteinSequenceEnumerable">IEnumerable of protein sequences, as strings.</param>
+		/// <param name="featureList">List of LC-IMS-MS Features, as LcImsMsFeature.</param>
+		/// <param name="peakList">List of Isotopic Peaks, as DeconTools MSPeakResult.</param>
+		/// <returns>An enumerable of CrossLinkResult objects.</returns>
+		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<string> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<MSPeakResult> peakList)
+		{
+			// Used for finding Isotopic Profiles in the data
+			BasicTFF msFeatureFinder = new BasicTFF();
+
+			List<CrossLink> crossLinkList = new List<CrossLink>();
+
+			// Create CrossLink objects from all of the protein sequences
+			foreach (string proteinSequence in proteinSequenceEnumerable)
+			{
+				// Get a List of Peptides from the Protein Sequence
+				IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequence);
+
+				// Find all possible cross links from the peptide list
+				IEnumerable<CrossLink> crossLinkEnumerable = CrossLinkUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequence);
+				crossLinkList.AddRange(crossLinkEnumerable);
+			}
+
+			IEnumerable<CrossLink> orderedCrossLinkEnumerable = crossLinkList.OrderBy(o => o.Mass);
+
+			// Set up a Feature Comparer to use for binary search later on
+			AnonymousComparer<LcImsMsFeature> featureComparer = new AnonymousComparer<LcImsMsFeature>((x, y) => x.MassMonoisotopic.CompareTo(y.MassMonoisotopic));
+
+			
 
 			// Sort the Isotopic Peaks by LC Scan, IMS Scan, and m/z to set them up for binary search later on
 			var sortPeakListQuery = from peak in peakList
@@ -177,8 +205,7 @@ namespace CrossLinkingIMS.Control
 				}
 			}
 
-			// Output the results
-			CrossLinkUtil.OutputCrossLinkResults(crossLinkResultList);
+			return crossLinkResultList;
 		}
 	}
 }
