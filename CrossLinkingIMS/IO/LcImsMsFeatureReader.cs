@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using CrossLinkingIMS.Constants;
 using CrossLinkingIMS.Data;
 
 namespace CrossLinkingIMS.IO
@@ -11,7 +12,6 @@ namespace CrossLinkingIMS.IO
 	/// </summary>
 	public class LcImsMsFeatureReader
 	{
-		private const double MASS_OF_PROTON = 1.00727649;
 		private const string FEATURE_INDEX = "Feature_Index";
 		private const string MONOISOTOPIC_MASS = "Monoisotopic_Mass";
 		private const string LC_SCAN_START = "Scan_Start";
@@ -120,7 +120,7 @@ namespace CrossLinkingIMS.IO
 
 			if (columnMapping.ContainsKey(MONOISOTOPIC_MASS) && columnMapping.ContainsKey(CHARGE_STATE))
 			{
-				double mz = (lcImsMsFeature.MassMonoisotopic / lcImsMsFeature.ChargeState) + MASS_OF_PROTON;
+				double mz = (lcImsMsFeature.MassMonoisotopic / lcImsMsFeature.ChargeState) + GeneralConstants.MASS_OF_PROTON;
 				lcImsMsFeature.MzMonoisotopic = mz;
 			}
 
