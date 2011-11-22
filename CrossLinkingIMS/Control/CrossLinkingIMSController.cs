@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Bio;
@@ -10,8 +8,6 @@ using CrossLinkingIMS.Data;
 using CrossLinkingIMS.IO;
 using CrossLinkingIMS.Util;
 using DeconTools.Backend.Core;
-using DeconTools.Backend.DTO;
-using DeconTools.Backend.Data;
 using DeconTools.Backend.ProcessingTasks.TargetedFeatureFinders;
 using ProteinDigestionSimulator;
 
@@ -26,25 +22,19 @@ namespace CrossLinkingIMS.Control
 		/// Executes the cross-link search for LC-IMS-TOF data.
 		/// </summary>
 		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
-		/// <param name="fastAFile">The FileInfo object for the FastA file containg all protein sequences you want to search.</param>
+		/// <param name="fastAFile">The FileInfo object for the FASTA file containg all protein sequences you want to search.</param>
 		/// <param name="featureFile">The FileInfo object for the LC-IMS-MS features file, created by the LC-IMS-MS Feature Finder. (email Kevin.Crowell@pnnl.gov for more info)</param>
 		/// <param name="peaksFile">The FileInfo object for the Isotopic Peaks file, created by DeconTools. (email Gordon.Slysz@pnnl.gov for more info)</param>
 		/// <returns>An enumerable of CrossLinkResult objects.</returns>
 		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, FileInfo fastAFile, FileInfo featureFile, FileInfo peaksFile)
 		{
-			// Read in Fasta File
+			// Read in FASTA File
 			FastAParser fastAParser = new FastAParser(fastAFile.FullName);
 			IEnumerable<ISequence> sequenceEnumerable = fastAParser.Parse();
 			IEnumerable<string> sequenceStringEnumerable = sequenceEnumerable.Select(sequence => sequence.ToString());
 
 			// Read in LC-IMS-MS Features
-			IEnumerable<LcImsMsFeature> featureEnumerable = LcImsMsFeatureReader.ReadFile(featureFile);
-
-			var sortFeatureListQuery = from feature in featureEnumerable
-									   orderby feature.MassMonoisotopic
-									   select feature;
-
-			List<LcImsMsFeature> featureList = sortFeatureListQuery.ToList();
+			List<LcImsMsFeature> featureList = LcImsMsFeatureReader.ReadFile(featureFile);
 
 			// Read in Isotopic Peaks (not Isotopic Profile)
 			List<IsotopicPeak> peakEnumerable = IsotopicPeakReader.ReadFile(peaksFile);
@@ -81,17 +71,17 @@ namespace CrossLinkingIMS.Control
 				crossLinkList.AddRange(crossLinkEnumerable);
 			}
 
-			IEnumerable<CrossLink> orderedCrossLinkEnumerable = crossLinkList.OrderBy(o => o.Mass);
+			// Sort the CrossLinks by mass so that the results are ordered in a friendly way
+			IEnumerable<CrossLink> orderedCrossLinkEnumerable = crossLinkList.OrderBy(x => x.Mass);
+
+			// Sort Feature by mass so we can use binary search
+			featureList = featureList.OrderBy(x => x.MassMonoisotopic).ToList();
 
 			// Set up a Feature Comparer to use for binary search later on
 			AnonymousComparer<LcImsMsFeature> featureComparer = new AnonymousComparer<LcImsMsFeature>((x, y) => x.MassMonoisotopic.CompareTo(y.MassMonoisotopic));
 
 			// Sort the Isotopic Peaks by LC Scan, IMS Scan, and m/z to set them up for binary search later on
-			var sortPeakListQuery = from peak in peakList
-									orderby peak.ScanLc, peak.ScanIms, peak.Mz
-									select peak;
-
-			peakList = sortPeakListQuery.ToList();
+			peakList = peakList.OrderBy(x => x.ScanLc).ThenBy(x => x.ScanIms).ThenBy(x => x.Mz).ToList();
 
 			List<CrossLinkResult> crossLinkResultList = new List<CrossLinkResult>();
 
