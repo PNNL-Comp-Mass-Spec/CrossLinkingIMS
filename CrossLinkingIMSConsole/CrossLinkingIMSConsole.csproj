@@ -76,6 +76,11 @@
       <Name>CrossLinkingIMS</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.doc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>SubWCRev.exe ..\..\..\..\ ..\..\..\Properties\AssemblyInfoTemplate.cs ..\..\..\Properties\AssemblyInfo.cs</PreBuildEvent>
