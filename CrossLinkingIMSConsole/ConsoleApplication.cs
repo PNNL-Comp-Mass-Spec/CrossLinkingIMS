@@ -107,14 +107,14 @@ namespace CrossLinkingIMSConsole
 			Console.WriteLine(Path.GetFileName(Assembly.GetExecutingAssembly().Location));
 			Console.WriteLine("CrossLinkingIMSConsole.exe -f [Features File] -p [Peaks File] -fasta [FastA file] -ppm Value [optional arguments]");
 			Console.WriteLine();
-			Console.WriteLine("*********REQUIRED ARGUMENTS ***********.");
+			Console.WriteLine("*********REQUIRED ARGUMENTS ***********");
 			Console.WriteLine();
 			Console.WriteLine(" -f: Features File. LC-IMS-MS Feature Finder Output. See README.");
 			Console.WriteLine(" -p: Peaks File. DeconTools Output. See README");
 			Console.WriteLine(" -fasta: FastA File. Contains all protein sequences to search.");
 			Console.WriteLine(" -ppm [value] : Mass tolerance in ppm");
 			Console.WriteLine();
-			Console.WriteLine("*********OPTIONAL ARGUMENTS ***********.");
+			Console.WriteLine("*********OPTIONAL ARGUMENTS ***********");
 			Console.WriteLine();
 			Console.WriteLine(" -debug : Display detailed debug messages during iteration. (NOT YET IMPLEMENTED)");
 			Console.WriteLine("");
