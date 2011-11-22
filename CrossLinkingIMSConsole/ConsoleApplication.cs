@@ -92,8 +92,14 @@ namespace CrossLinkingIMSConsole
 			Console.WriteLine("Executing...");
 			IEnumerable<CrossLinkResult> crossLinkResults = CrossLinkingImsController.Execute(massTolerance, fastAFile, featureFile, peaksFile);
 
-			// Hard coded output file
-			FileInfo outputFileInfo = new FileInfo("crossLinkResults.csv");
+			// Get the Output File Location
+			string outputFileLocation = "";
+			if (!commandLineUtil.RetrieveValueForParameter("o", out outputFileLocation))
+			{
+				outputFileLocation = "crossLinkResults.csv";
+			}
+
+			FileInfo outputFileInfo = new FileInfo(outputFileLocation);
 
 			// Output the results
 			Console.WriteLine("Outputting results to " + outputFileInfo.FullName);
@@ -116,6 +122,7 @@ namespace CrossLinkingIMSConsole
 			Console.WriteLine();
 			Console.WriteLine("*********OPTIONAL ARGUMENTS ***********");
 			Console.WriteLine();
+			Console.WriteLine(" -o: The desired location and name for the output file. Defaults to workingDirectory/crossLinkResults.csv");
 			Console.WriteLine(" -debug : Display detailed debug messages during iteration. (NOT YET IMPLEMENTED)");
 			Console.WriteLine("");
 			Thread.Sleep(2000);
