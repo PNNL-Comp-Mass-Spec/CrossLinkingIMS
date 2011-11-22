@@ -46,6 +46,9 @@
     <Reference Include="NETPrediction">
       <HintPath>..\lib\NETPrediction.dll</HintPath>
     </Reference>
+    <Reference Include="PNNLOmics">
+      <HintPath>..\lib\PNNLOmics.dll</HintPath>
+    </Reference>
     <Reference Include="ProteinDigestionSimulator">
       <HintPath>..\lib\ProteinDigestionSimulator.dll</HintPath>
     </Reference>

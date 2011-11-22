@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
 using CrossLinkingIMS.Control;
 using CrossLinkingIMS.Data;
 using CrossLinkingIMS.Util;
+using PNNLOmics.Utilities.ConsoleUtil;
 
 namespace CrossLinkingIMSConsole
 {
@@ -32,20 +32,54 @@ namespace CrossLinkingIMSConsole
 			Assembly assembly = Assembly.GetExecutingAssembly();
 			string assemblyVersion = assembly.GetName().Version.ToString();
 
-			Console.WriteLine("Using CrossLinkingIMS Version " + assemblyVersion);
+			Console.WriteLine("CrossLinkingIMS Console Application Version " + assemblyVersion);
 
-			// Hard-coded mass tolerance
-			const double massTolerance = 20;
+			CommandLineUtil commandLineUtil = new CommandLineUtil();
+
+			// Make sure we have parameters. If not, then show the user the proper syntax
+			bool doParametersExist = commandLineUtil.ParseCommandLine();
+			if (!doParametersExist)
+			{
+				ShowSyntax();
+				return;
+			}
+
+			// Get the Feature File Location
+			string featureFileLocation = "";
+			if (!commandLineUtil.RetrieveValueForParameter("f", out featureFileLocation))
+			{
+				Console.WriteLine("-f switch is missing");
+				ShowSyntax();
+				return;
+			}
+
+			FileInfo featureFile = new FileInfo(featureFileLocation);
+
+			// Get the Peaks File Location
+			string peaksFileLocation = "";
+			if (!commandLineUtil.RetrieveValueForParameter("p", out peaksFileLocation))
+			{
+				Console.WriteLine("-p switch is missing");
+				ShowSyntax();
+				return;
+			}
+
+			FileInfo peaksFile = new FileInfo(peaksFileLocation);
+
+			// Get the PPM Mass Tolerance
+			string massToleranceString = "";
+			if (!commandLineUtil.RetrieveValueForParameter("ppm", out massToleranceString))
+			{
+				Console.WriteLine("-ppm switch is missing");
+				ShowSyntax();
+				return;
+			}
+
+			double massTolerance = double.Parse(massToleranceString);
 
 			// Hard-coded Protein Sequence
 			List<string> proteinList = new List<string>();
 			proteinList.Add("AEQVSKQEISHFKLVKVGTINVSQSGGQISSPSDLREKLSELADAKGGKYYHIIAAREHGPNFEAVAEVYNDATKLEHHHHHH");
-
-			// Hard-coded features file
-			FileInfo featureFile = new FileInfo("SrfN_NC50_IMS_7Sep11_Roc_11-05-30_LCMSFeatures.txt");
-
-			// Hard coded peaks file
-			FileInfo peaksFile = new FileInfo("SrfN_NC50_IMS_7Sep11_Roc_11-05-30_peaks.txt");
 
 			// Run the cross-linking application
 			Console.WriteLine("Executing...");
@@ -57,6 +91,26 @@ namespace CrossLinkingIMSConsole
 			// Output the results
 			Console.WriteLine("Outputting results to " + outputFileInfo.FullName);
 			CrossLinkUtil.OutputCrossLinkResults(crossLinkResults, outputFileInfo);
+		}
+
+		private static void ShowSyntax()
+		{
+			Console.WriteLine();
+			Console.WriteLine("Program syntax:");
+			Console.WriteLine(Path.GetFileName(Assembly.GetExecutingAssembly().Location));
+			Console.WriteLine("CrossLinkingIMSConsole.exe -f [Features File] -p [Peaks File] -ppm Value [optional arguments]");
+			Console.WriteLine();
+			Console.WriteLine("*********REQUIRED ARGUMENTS ***********.");
+			Console.WriteLine();
+			Console.WriteLine(" -f: Features File. LC-IMS-MS Feature Finder Output. See README.");
+			Console.WriteLine(" -p: Peaks File. DeconTools Output. See README");
+			Console.WriteLine(" -ppm [value] : Mass tolerance in ppm");
+			Console.WriteLine();
+			Console.WriteLine("*********OPTIONAL ARGUMENTS ***********.");
+			Console.WriteLine();
+			Console.WriteLine(" -debug : Display detailed debug messages during iteration. (NOT YET IMPLEMENTED)");
+			Console.WriteLine("");
+			Thread.Sleep(2000);
 		}
 	}
 }
