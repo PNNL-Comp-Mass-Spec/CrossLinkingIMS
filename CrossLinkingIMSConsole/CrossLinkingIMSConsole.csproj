@@ -37,6 +37,9 @@
     <DocumentationFile>bin\x86\Release\CrossLinkingIMSConsole.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Bio">
+      <HintPath>..\lib\Bio.dll</HintPath>
+    </Reference>
     <Reference Include="DeconEngineV2">
       <HintPath>..\lib\DeconEngineV2.dll</HintPath>
     </Reference>

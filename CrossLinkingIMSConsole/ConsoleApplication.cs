@@ -66,6 +66,21 @@ namespace CrossLinkingIMSConsole
 
 			FileInfo peaksFile = new FileInfo(peaksFileLocation);
 
+			// Get the FastA File Location
+			string fastAFileLocation = "";
+			if (!commandLineUtil.RetrieveValueForParameter("fasta", out fastAFileLocation))
+			{
+				Console.WriteLine("-fasta switch is missing");
+				ShowSyntax();
+				return;
+			}
+
+			FileInfo fastAFile = new FileInfo(fastAFileLocation);
+
+			// Hard-coded Protein Sequence
+			//List<string> proteinList = new List<string>();
+			//proteinList.Add("AEQVSKQEISHFKLVKVGTINVSQSGGQISSPSDLREKLSELADAKGGKYYHIIAAREHGPNFEAVAEVYNDATKLEHHHHHH");
+
 			// Get the PPM Mass Tolerance
 			string massToleranceString = "";
 			if (!commandLineUtil.RetrieveValueForParameter("ppm", out massToleranceString))
@@ -77,13 +92,9 @@ namespace CrossLinkingIMSConsole
 
 			double massTolerance = double.Parse(massToleranceString);
 
-			// Hard-coded Protein Sequence
-			List<string> proteinList = new List<string>();
-			proteinList.Add("AEQVSKQEISHFKLVKVGTINVSQSGGQISSPSDLREKLSELADAKGGKYYHIIAAREHGPNFEAVAEVYNDATKLEHHHHHH");
-
 			// Run the cross-linking application
 			Console.WriteLine("Executing...");
-			IEnumerable<CrossLinkResult> crossLinkResults = CrossLinkingImsController.Execute(massTolerance, proteinList, featureFile, peaksFile);
+			IEnumerable<CrossLinkResult> crossLinkResults = CrossLinkingImsController.Execute(massTolerance, fastAFile, featureFile, peaksFile);
 
 			// Hard coded output file
 			FileInfo outputFileInfo = new FileInfo("crossLinkResults.csv");
@@ -98,12 +109,13 @@ namespace CrossLinkingIMSConsole
 			Console.WriteLine();
 			Console.WriteLine("Program syntax:");
 			Console.WriteLine(Path.GetFileName(Assembly.GetExecutingAssembly().Location));
-			Console.WriteLine("CrossLinkingIMSConsole.exe -f [Features File] -p [Peaks File] -ppm Value [optional arguments]");
+			Console.WriteLine("CrossLinkingIMSConsole.exe -f [Features File] -p [Peaks File] -fasta [FastA file] -ppm Value [optional arguments]");
 			Console.WriteLine();
 			Console.WriteLine("*********REQUIRED ARGUMENTS ***********.");
 			Console.WriteLine();
 			Console.WriteLine(" -f: Features File. LC-IMS-MS Feature Finder Output. See README.");
 			Console.WriteLine(" -p: Peaks File. DeconTools Output. See README");
+			Console.WriteLine(" -fasta: FastA File. Contains all protein sequences to search.");
 			Console.WriteLine(" -ppm [value] : Mass tolerance in ppm");
 			Console.WriteLine();
 			Console.WriteLine("*********OPTIONAL ARGUMENTS ***********.");
