@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using CrossLinkingIMS.Data;
 using DeconTools.Backend.Core;
 using DeconTools.Backend.DTO;
 
@@ -17,15 +18,13 @@ namespace CrossLinkingIMS.Util
 		/// <param name="scanLc">The LC Scan to consider.</param>
 		/// <param name="scanIms">The IMS Scan to consider.</param>
 		/// <returns>All peaks that are in the given LC Scan and IMS Scan and m/z >= thegiven m/z of the Feature.</returns>
-		public static List<IPeak> FindCandidatePeaks(List<MSPeakResult> completePeakList, double minimumMz, int scanLc, int scanIms)
+		public static List<IPeak> FindCandidatePeaks(List<IsotopicPeak> completePeakList, double minimumMz, int scanLc, int scanIms)
 		{
 			// Set up Peak Comparer to use for binary search later on
-			AnonymousComparer<MSPeakResult> peakComparer = new AnonymousComparer<MSPeakResult>((x, y) => x.Frame_num != y.Frame_num ? x.Frame_num.CompareTo(y.Frame_num) : x.Scan_num != y.Scan_num ? x.Scan_num.CompareTo(y.Scan_num) : x.XValue.CompareTo(y.XValue));
+			AnonymousComparer<IsotopicPeak> peakComparer = new AnonymousComparer<IsotopicPeak>((x, y) => x.ScanLc != y.ScanLc ? x.ScanLc.CompareTo(y.ScanLc) : x.ScanIms != y.ScanIms ? x.ScanIms.CompareTo(y.ScanIms) : x.Mz.CompareTo(y.Mz));
 
-			MSPeak msPeakLow = new MSPeak(minimumMz, 1, 1, 1);
-			MSPeak msPeakHigh = new MSPeak(0, 1, 1, 1);
-			MSPeakResult lowPeak = new MSPeakResult(1, scanLc, scanIms, msPeakLow);
-			MSPeakResult highPeak = new MSPeakResult(1, scanLc, scanIms + 1, msPeakHigh);
+			IsotopicPeak lowPeak = new IsotopicPeak {ScanLc = scanLc, ScanIms = scanIms, Mz = minimumMz, Intensity = 1};
+			IsotopicPeak highPeak = new IsotopicPeak { ScanLc = scanLc, ScanIms = scanIms + 1, Mz = 0, Intensity = 1 };
 
 			int lowPeakPosition = completePeakList.BinarySearch(lowPeak, peakComparer);
 			int highPeakPosition = completePeakList.BinarySearch(highPeak, peakComparer);
@@ -37,8 +36,8 @@ namespace CrossLinkingIMS.Util
 
 			for (int j = lowPeakPosition; j < highPeakPosition; j++)
 			{
-				MSPeakResult msPeakResult = completePeakList[j];
-				MSPeak msPeak = new MSPeak(msPeakResult.XValue, msPeakResult.Height, msPeakResult.Width, 1);
+				IsotopicPeak peak = completePeakList[j];
+				MSPeak msPeak = new MSPeak(peak.Mz, peak.Intensity, 0.05f, 1);
 				candidatePeaks.Add(msPeak);
 			}
 

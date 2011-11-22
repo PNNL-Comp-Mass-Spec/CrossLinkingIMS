@@ -47,15 +47,10 @@ namespace CrossLinkingIMS.Control
 			List<LcImsMsFeature> featureList = sortFeatureListQuery.ToList();
 
 			// Read in Isotopic Peaks (not Isotopic Profile)
-			BackgroundWorker backgroundWorker = new BackgroundWorker { WorkerReportsProgress = true, WorkerSupportsCancellation = true };
-			PeakImporterFromText peakImporter = new PeakImporterFromText(peaksFile.FullName, backgroundWorker);
-			List<IPeak> iPeakList = new List<IPeak>();
-			peakImporter.ImportUIMFPeaks(iPeakList);
-
-			List<MSPeakResult> peakList = iPeakList.Select(i => (MSPeakResult)i).ToList();
+			List<IsotopicPeak> peakEnumerable = IsotopicPeakReader.ReadFile(peaksFile);
 
 			// Now call the executor that expects the opbjects instead of the file locations
-			return Execute(massToleranceBase, sequenceStringEnumerable, featureList, peakList);
+			return Execute(massToleranceBase, sequenceStringEnumerable, featureList, peakEnumerable);
 		}
 
 		/// <summary>
@@ -64,9 +59,9 @@ namespace CrossLinkingIMS.Control
 		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
 		/// <param name="proteinSequenceEnumerable">IEnumerable of protein sequences, as strings.</param>
 		/// <param name="featureList">List of LC-IMS-MS Features, as LcImsMsFeature.</param>
-		/// <param name="peakList">List of Isotopic Peaks, as DeconTools MSPeakResult.</param>
+		/// <param name="peakList">List of Isotopic Peaks, as IsotopicPeak.</param>
 		/// <returns>An enumerable of CrossLinkResult objects.</returns>
-		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<string> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<MSPeakResult> peakList)
+		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<string> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<IsotopicPeak> peakList)
 		{
 			// Used for finding Isotopic Profiles in the data
 			BasicTFF msFeatureFinder = new BasicTFF();
@@ -91,11 +86,9 @@ namespace CrossLinkingIMS.Control
 			// Set up a Feature Comparer to use for binary search later on
 			AnonymousComparer<LcImsMsFeature> featureComparer = new AnonymousComparer<LcImsMsFeature>((x, y) => x.MassMonoisotopic.CompareTo(y.MassMonoisotopic));
 
-			
-
 			// Sort the Isotopic Peaks by LC Scan, IMS Scan, and m/z to set them up for binary search later on
 			var sortPeakListQuery = from peak in peakList
-									orderby peak.Frame_num, peak.Scan_num, peak.XValue
+									orderby peak.ScanLc, peak.ScanIms, peak.Mz
 									select peak;
 
 			peakList = sortPeakListQuery.ToList();
