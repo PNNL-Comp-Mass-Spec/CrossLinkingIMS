@@ -181,7 +181,7 @@ namespace CrossLinkingIMS.Control
 							};
 
 							// Search for the theoretical Isotopic Profile
-							IsotopicProfile foundProfile = msFeatureFinder.FindMSFeature(candidatePeaks, isotopicProfile, 20, false);
+							IsotopicProfile foundProfile = msFeatureFinder.FindMSFeature(candidatePeaks, isotopicProfile, massToleranceBase, false);
 
 							/*
 							 * It is possible that the set mono pass of the previous theoretical distribution was the right-most peak of the actual distribution
@@ -202,7 +202,7 @@ namespace CrossLinkingIMS.Control
 									Peaklist = sortPeaksQuery.ToList()
 								};
 
-								foundProfile = msFeatureFinder.FindMSFeature(candidatePeaks, isotopicProfile, 20, false);
+								foundProfile = msFeatureFinder.FindMSFeature(candidatePeaks, isotopicProfile, massToleranceBase, false);
 							}
 
 							// Add to results, even if we did not find it.
