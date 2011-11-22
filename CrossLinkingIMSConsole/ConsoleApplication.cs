@@ -77,10 +77,6 @@ namespace CrossLinkingIMSConsole
 
 			FileInfo fastAFile = new FileInfo(fastAFileLocation);
 
-			// Hard-coded Protein Sequence
-			//List<string> proteinList = new List<string>();
-			//proteinList.Add("AEQVSKQEISHFKLVKVGTINVSQSGGQISSPSDLREKLSELADAKGGKYYHIIAAREHGPNFEAVAEVYNDATKLEHHHHHH");
-
 			// Get the PPM Mass Tolerance
 			string massToleranceString = "";
 			if (!commandLineUtil.RetrieveValueForParameter("ppm", out massToleranceString))
