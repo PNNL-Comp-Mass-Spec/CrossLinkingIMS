@@ -35,6 +35,11 @@ namespace CrossLinkingIMS.Data
 	public class CrossLink
 	{
 		/// <summary>
+		/// The identifier of the protein used to generate this cross-link
+		/// </summary>
+		public string ProteinId { get; private set; }
+
+		/// <summary>
 		/// The first Peptide of the cross-link.
 		/// </summary>
 		public clsInSilicoDigest.PeptideInfoClass PeptideOne { get; private set; }
@@ -62,12 +67,14 @@ namespace CrossLinkingIMS.Data
 		/// <summary>
 		/// The only constructor for the CrossLink object requires 1 or 2 peptides, the mass of the peptides, and the ModType of the cross-link.
 		/// </summary>
+		/// <param name="proteinId">The identifier of the protein of the cross-link.</param>
 		/// <param name="peptideOne">The first peptide of the cross-link.</param>
 		/// <param name="peptideTwo">The second peptide of the cross-link. Can be null if linking the first peptide to itself.</param>
 		/// <param name="mass">The monoisotopic mass of the un-shifted cross-link, in daltons.</param>
 		/// <param name="modType">The mod type of the cross link. See CrossLink.ModType for explaination of mod types.</param>
-		public CrossLink(clsInSilicoDigest.PeptideInfoClass peptideOne, clsInSilicoDigest.PeptideInfoClass peptideTwo, double mass, ModType modType)
+		public CrossLink(string proteinId, clsInSilicoDigest.PeptideInfoClass peptideOne, clsInSilicoDigest.PeptideInfoClass peptideTwo, double mass, ModType modType)
 		{
+			this.ProteinId = proteinId;
 			this.PeptideOne = peptideOne;
 			this.PeptideTwo = peptideTwo;
 			this.Mass = mass;
@@ -94,7 +101,7 @@ namespace CrossLinkingIMS.Data
 
 		/// <summary>
 		/// Determines whether the specified CrossLink Object is equal to the current CrossLink Object.
-		/// Equality is determined by Mass and ModType.
+		/// Equality is determined by Protein, Mass, and ModType.
 		/// </summary>
 		/// <param name="other">The specified CrossLink Object.</param>
 		/// <returns>true if the objects are equal, false otherwise</returns>
@@ -102,20 +109,20 @@ namespace CrossLinkingIMS.Data
 		{
 			if (ReferenceEquals(null, other)) return false;
 			if (ReferenceEquals(this, other)) return true;
-			return other.Mass.Equals(this.Mass) && Equals(other.ModType, this.ModType);
+			return other.ProteinId.Equals(this.ProteinId) && other.Mass.Equals(this.Mass) && Equals(other.ModType, this.ModType);
 		}
 
 		public override int GetHashCode()
 		{
 			unchecked
 			{
-				return (this.Mass.GetHashCode()*397) ^ this.ModType.GetHashCode();
+				return this.ProteinId.GetHashCode()*397 ^ this.Mass.GetHashCode()*397 ^ this.ModType.GetHashCode();
 			}
 		}
 
 		public override string ToString()
 		{
-			return string.Format("PeptideOne: {0}, PeptideTwo: {1}, ModType: {2}", PeptideOne.SequenceOneLetter, PeptideTwo != null ? PeptideTwo.SequenceOneLetter : "", ModType);
+			return string.Format("ProteinId: {0}, PeptideOne: {1}, PeptideTwo: {2}, ModType: {3}", ProteinId, PeptideOne.SequenceOneLetter, PeptideTwo != null ? PeptideTwo.SequenceOneLetter : "", ModType);
 		}
 	}
 }

@@ -31,7 +31,6 @@ namespace CrossLinkingIMS.Control
 			// Read in FASTA File
 			FastAParser fastAParser = new FastAParser(fastAFile.FullName);
 			IEnumerable<ISequence> sequenceEnumerable = fastAParser.Parse();
-			IEnumerable<string> sequenceStringEnumerable = sequenceEnumerable.Select(sequence => new string(sequence.Select((a => (char)a)).ToArray()));
 
 			// Read in LC-IMS-MS Features
 			List<LcImsMsFeature> featureList = LcImsMsFeatureReader.ReadFile(featureFile);
@@ -40,18 +39,18 @@ namespace CrossLinkingIMS.Control
 			List<IsotopicPeak> peakEnumerable = IsotopicPeakReader.ReadFile(peaksFile);
 
 			// Now call the executor that expects the opbjects instead of the file locations
-			return Execute(massToleranceBase, sequenceStringEnumerable, featureList, peakEnumerable);
+			return Execute(massToleranceBase, sequenceEnumerable, featureList, peakEnumerable);
 		}
 
 		/// <summary>
 		/// Executes the cross-link search for LC-IMS-TOF data.
 		/// </summary>
 		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
-		/// <param name="proteinSequenceEnumerable">IEnumerable of protein sequences, as strings.</param>
+		/// <param name="proteinSequenceEnumerable">IEnumerable of protein sequences, as a .NET Bio ISequence object.</param>
 		/// <param name="featureList">List of LC-IMS-MS Features, as LcImsMsFeature.</param>
 		/// <param name="peakList">List of Isotopic Peaks, as IsotopicPeak.</param>
 		/// <returns>An enumerable of CrossLinkResult objects.</returns>
-		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<string> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<IsotopicPeak> peakList)
+		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<ISequence> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<IsotopicPeak> peakList)
 		{
 			// Used for finding Isotopic Profiles in the data
 			BasicTFF msFeatureFinder = new BasicTFF();
@@ -59,13 +58,16 @@ namespace CrossLinkingIMS.Control
 			List<CrossLink> crossLinkList = new List<CrossLink>();
 
 			// Create CrossLink objects from all of the protein sequences
-			foreach (string proteinSequence in proteinSequenceEnumerable)
+			foreach (ISequence proteinSequence in proteinSequenceEnumerable)
 			{
+				string proteinSequenceString = new string(proteinSequence.Select((a => (char)a)).ToArray());
+				string proteinId = proteinSequence.ID;
+
 				// Get a List of Peptides from the Protein Sequence
-				IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequence);
+				IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequenceString);
 
 				// Find all possible cross links from the peptide list
-				IEnumerable<CrossLink> crossLinkEnumerable = CrossLinkUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequence);
+				IEnumerable<CrossLink> crossLinkEnumerable = CrossLinkUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequenceString, proteinId);
 				crossLinkList.AddRange(crossLinkEnumerable);
 			}
 

@@ -52,15 +52,16 @@ namespace CrossLinkingIMS.Util
 		/// </summary>
 		/// <param name="peptideEnumerable">List of peptides to generate cross-links from.</param>
 		/// <param name="proteinSequence">Protein sequence used.</param>
+		/// <param name="proteinId">The identifier of the protein sequence used.</param>
 		/// <returns>An IEnumerable of CrossLink objects.</returns>
-		public static IEnumerable<CrossLink> GenerateTheoreticalCrossLinks(IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideEnumerable, String proteinSequence)
+		public static IEnumerable<CrossLink> GenerateTheoreticalCrossLinks(IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideEnumerable, String proteinSequence, String proteinId)
 		{
 			HashSet<CrossLink> crossLinkSet = new HashSet<CrossLink>();
 
 			foreach (clsInSilicoDigest.PeptideInfoClass firstPeptide in peptideEnumerable)
 			{
 				// First find all cross links using the first peptide + a null peptide
-				foreach (CrossLink crossLink in FindCrossLinks(firstPeptide, null, proteinSequence))
+				foreach (CrossLink crossLink in FindCrossLinks(proteinId, firstPeptide, null, proteinSequence))
 				{
 					crossLinkSet.Add(crossLink);
 				}
@@ -68,7 +69,7 @@ namespace CrossLinkingIMS.Util
 				// Then find all cross links using the first peptide and every other peptide
 				foreach (clsInSilicoDigest.PeptideInfoClass secondPeptide in peptideEnumerable)
 				{
-					foreach (CrossLink crossLink in FindCrossLinks(firstPeptide, secondPeptide, proteinSequence))
+					foreach (CrossLink crossLink in FindCrossLinks(proteinId, firstPeptide, secondPeptide, proteinSequence))
 					{
 						crossLinkSet.Add(crossLink);
 					}
@@ -101,11 +102,12 @@ namespace CrossLinkingIMS.Util
 		/// <summary>
 		/// Finds all theoretical cross links given 2 peptides and a protein sequence.
 		/// </summary>
+		/// <param name="proteinId">The identifier of the protein used for cross linking.</param>
 		/// <param name="firstPeptide">The first peptide used for cross linking.</param>
 		/// <param name="secondPeptide">The second peptide used for cross linking. null if linking the first peptide to itself.</param>
 		/// <param name="proteinSequence">Protein sequence used.</param>
 		/// <returns>An IEnumerable of CrossLink objects.</returns>
-		private static IEnumerable<CrossLink> FindCrossLinks(clsInSilicoDigest.PeptideInfoClass firstPeptide, clsInSilicoDigest.PeptideInfoClass secondPeptide, String proteinSequence)
+		private static IEnumerable<CrossLink> FindCrossLinks(string proteinId, clsInSilicoDigest.PeptideInfoClass firstPeptide, clsInSilicoDigest.PeptideInfoClass secondPeptide, String proteinSequence)
 		{
 			List<CrossLink> crossLinkList = new List<CrossLink>();
 
@@ -113,7 +115,7 @@ namespace CrossLinkingIMS.Util
 			if (secondPeptide == null)
 			{
 				// Create cross-link for unmodified peptide
-				crossLinkList.Add(new CrossLink(firstPeptide, null, firstPeptide.Mass, ModType.None));
+				crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, firstPeptide.Mass, ModType.None));
 
 				// Check for inter-linked peptides (will not always find)
 				string peptideString = firstPeptide.SequenceOneLetter.Substring(0, firstPeptide.SequenceOneLetter.Length - 1); // Remove last character
@@ -132,7 +134,7 @@ namespace CrossLinkingIMS.Util
 				for (int i = 1; i <= numLysines; i++)
 				{
 					double modifiedMass = firstPeptide.Mass + (i * CrossLinkConstants.DEAD_END_MASS);
-					crossLinkList.Add(new CrossLink(firstPeptide, null, modifiedMass, ModType.Zero));
+					crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, modifiedMass, ModType.Zero));
 				}
 
 				// Type 1
@@ -141,7 +143,7 @@ namespace CrossLinkingIMS.Util
 					for (int i = 1; i <= numLysines - 1; i++)
 					{
 						double modifiedMass = firstPeptide.Mass + (i * CrossLinkConstants.LINKER_MASS);
-						crossLinkList.Add(new CrossLink(firstPeptide, null, modifiedMass, ModType.One));
+						crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, modifiedMass, ModType.One));
 					}
 				}
 
@@ -154,7 +156,7 @@ namespace CrossLinkingIMS.Util
 						for (int j = 1; j <= numLysinesLeft; j++)
 						{
 							double modifiedMass = firstPeptide.Mass + (i * CrossLinkConstants.LINKER_MASS) + (j * CrossLinkConstants.DEAD_END_MASS);
-							crossLinkList.Add(new CrossLink(firstPeptide, null, modifiedMass, ModType.ZeroOne));
+							crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, modifiedMass, ModType.ZeroOne));
 						}
 					}
 				}
@@ -199,12 +201,12 @@ namespace CrossLinkingIMS.Util
 						// Type 2
 						if (j == 0)
 						{
-							crossLinkList.Add(new CrossLink(firstPeptide, secondPeptide, modifiedMass, ModType.Two));
+							crossLinkList.Add(new CrossLink(proteinId, firstPeptide, secondPeptide, modifiedMass, ModType.Two));
 						}
 						// Type 2 and Type 0 mix
 						else
 						{
-							crossLinkList.Add(new CrossLink(firstPeptide, secondPeptide, modifiedMass, ModType.ZeroTwo));
+							crossLinkList.Add(new CrossLink(proteinId, firstPeptide, secondPeptide, modifiedMass, ModType.ZeroTwo));
 						}
 					}
 				}
@@ -220,7 +222,7 @@ namespace CrossLinkingIMS.Util
 		public static void OutputCrossLinkResults(IEnumerable<CrossLinkResult> crossLinkResultEnumerable, FileInfo outputFileInfo)
 		{
 			TextWriter crossLinkWriter = new StreamWriter(outputFileInfo.FullName);
-			crossLinkWriter.WriteLine("Index,Pep1,Pep2,ModType,TheoreticalMass,FeatureMass,PPMError,FeatureMz,ShiftedMassPep1,ShiftedMzPep1,ShiftedMassPep2,ShiftedMzPep2,ShiftedMassBoth,ShiftedMzBoth,ChargeState,LCScans,IMSScan,DriftTime,Abundance,FeatureIndex");
+			crossLinkWriter.WriteLine("Index,Protein,Pep1,Pep2,ModType,TheoreticalMass,FeatureMass,PPMError,FeatureMz,ShiftedMassPep1,ShiftedMzPep1,ShiftedMassPep2,ShiftedMzPep2,ShiftedMassBoth,ShiftedMzBoth,ChargeState,LCScans,IMSScan,DriftTime,Abundance,FeatureIndex");
 			int index = 0;
 
 			var groupByCrossLinkQuery = crossLinkResultEnumerable.GroupBy(crossLinkResult => new { crossLinkResult.CrossLink,
@@ -239,6 +241,7 @@ namespace CrossLinkingIMS.Util
 
 				StringBuilder outputLine = new StringBuilder();
 				outputLine.Append(index++ + ",");
+				outputLine.Append(crossLink.ProteinId + ",");
 				outputLine.Append(crossLink.PeptideOne.SequenceOneLetter + ",");
 				outputLine.Append((crossLink.PeptideTwo != null ? crossLink.PeptideTwo.SequenceOneLetter : "null") + ",");
 				outputLine.Append(crossLink.ModType + ",");
