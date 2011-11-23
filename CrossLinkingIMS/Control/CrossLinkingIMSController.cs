@@ -31,7 +31,7 @@ namespace CrossLinkingIMS.Control
 			// Read in FASTA File
 			FastAParser fastAParser = new FastAParser(fastAFile.FullName);
 			IEnumerable<ISequence> sequenceEnumerable = fastAParser.Parse();
-			IEnumerable<string> sequenceStringEnumerable = sequenceEnumerable.Select(sequence => sequence.ToString());
+			IEnumerable<string> sequenceStringEnumerable = sequenceEnumerable.Select(sequence => new string(sequence.Select((a => (char)a)).ToArray()));
 
 			// Read in LC-IMS-MS Features
 			List<LcImsMsFeature> featureList = LcImsMsFeatureReader.ReadFile(featureFile);
@@ -61,8 +61,6 @@ namespace CrossLinkingIMS.Control
 			// Create CrossLink objects from all of the protein sequences
 			foreach (string proteinSequence in proteinSequenceEnumerable)
 			{
-				//string proteinSequenceString = proteinSequence.ToString();
-
 				// Get a List of Peptides from the Protein Sequence
 				IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequence);
 
