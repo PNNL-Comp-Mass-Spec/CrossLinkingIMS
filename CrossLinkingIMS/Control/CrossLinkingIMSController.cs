@@ -77,11 +77,12 @@ namespace CrossLinkingIMS.Control
 			// Sort Feature by mass so we can use binary search
 			featureList = featureList.OrderBy(x => x.MassMonoisotopic).ToList();
 
-			// Set up a Feature Comparer to use for binary search later on
+			// Set up a Feature Comparer and Peak Comparer to use for binary search later on
 			AnonymousComparer<LcImsMsFeature> featureComparer = new AnonymousComparer<LcImsMsFeature>((x, y) => x.MassMonoisotopic.CompareTo(y.MassMonoisotopic));
+			AnonymousComparer<IsotopicPeak> peakComparer = new AnonymousComparer<IsotopicPeak>((x, y) => x.ScanLc != y.ScanLc ? x.ScanLc.CompareTo(y.ScanLc) : x.ScanIms != y.ScanIms ? x.ScanIms.CompareTo(y.ScanIms) : x.Mz.CompareTo(y.Mz));
 
 			// Sort the Isotopic Peaks by LC Scan, IMS Scan, and m/z to set them up for binary search later on
-			peakList = peakList.OrderBy(x => x.ScanLc).ThenBy(x => x.ScanIms).ThenBy(x => x.Mz).ToList();
+			peakList.Sort(peakComparer);
 
 			List<CrossLinkResult> crossLinkResultList = new List<CrossLinkResult>();
 
