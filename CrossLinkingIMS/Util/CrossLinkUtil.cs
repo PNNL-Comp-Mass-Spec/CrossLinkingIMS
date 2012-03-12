@@ -15,6 +15,7 @@ namespace CrossLinkingIMS.Util
 	public class CrossLinkUtil
 	{
 		private static readonly Dictionary<char, AminoAcid> m_aminoAcidDictionary;
+		private static readonly char[] m_crossLinkCharacters = { 'K', 'S', 'T', 'Y' };
 
 		/// <summary>
 		/// Static constructor that will initialize the Amino Acid Dictionary
@@ -118,29 +119,36 @@ namespace CrossLinkingIMS.Util
 				crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, firstPeptide.Mass, ModType.None));
 
 				// Check for inter-linked peptides (will not always find)
-				string peptideString = firstPeptide.SequenceOneLetter.Substring(0, firstPeptide.SequenceOneLetter.Length - 1); // Remove last character
-				int numLysines = peptideString.Count(c => c == 'K');
+				string peptideString = firstPeptide.SequenceOneLetter;
+				if (peptideString.Last() == 'K')
+				{
+					// Remove last character if it is a K
+					peptideString = peptideString.Substring(0, peptideString.Length - 1);
+				}
+
+				// Count the number of cross-link characters in the sequence
+				int numCrossLinkCharacters = peptideString.Count(m_crossLinkCharacters.Contains);
 
 				// If we are dealing with the peptide located at the very beginning of the protein sequence, then pretend we have an extra Lysine since we can cross-link with the first amino acid
 				if (proteinSequence.StartsWith(peptideString))
 				{
-					numLysines++;
+					numCrossLinkCharacters++;
 				}
 
 				// If 0 Lysines are found, then we are done
-				if (numLysines == 0) return crossLinkList;
+				if (numCrossLinkCharacters == 0) return crossLinkList;
 
 				// Type 0
-				for (int i = 1; i <= numLysines; i++)
+				for (int i = 1; i <= numCrossLinkCharacters; i++)
 				{
 					double modifiedMass = firstPeptide.Mass + (i * CrossLinkConstants.DEAD_END_MASS);
 					crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, modifiedMass, ModType.Zero));
 				}
 
 				// Type 1
-				if (numLysines >= 2)
+				if (numCrossLinkCharacters >= 2)
 				{
-					for (int i = 1; i <= numLysines - 1; i++)
+					for (int i = 1; i <= numCrossLinkCharacters - 1; i++)
 					{
 						double modifiedMass = firstPeptide.Mass + (i * CrossLinkConstants.LINKER_MASS);
 						crossLinkList.Add(new CrossLink(proteinId, firstPeptide, null, modifiedMass, ModType.One));
@@ -148,11 +156,11 @@ namespace CrossLinkingIMS.Util
 				}
 
 				// Type 0 and Type 1 mix
-				if (numLysines >= 3)
+				if (numCrossLinkCharacters >= 3)
 				{
-					for (int i = 1; i <= numLysines / 2; i++)
+					for (int i = 1; i <= numCrossLinkCharacters / 2; i++)
 					{
-						int numLysinesLeft = numLysines - (i * 2);
+						int numLysinesLeft = numCrossLinkCharacters - (i * 2);
 						for (int j = 1; j <= numLysinesLeft; j++)
 						{
 							double modifiedMass = firstPeptide.Mass + (i * CrossLinkConstants.LINKER_MASS) + (j * CrossLinkConstants.DEAD_END_MASS);
@@ -164,32 +172,40 @@ namespace CrossLinkingIMS.Util
 			// If 2 peptides
 			else
 			{
-				// First strip the last character from both peptide sequences
-				string firstPeptideString = firstPeptide.SequenceOneLetter.Substring(0, firstPeptide.SequenceOneLetter.Length - 1);
-				string secondPeptideString = secondPeptide.SequenceOneLetter.Substring(0, secondPeptide.SequenceOneLetter.Length - 1);
+				// First strip the last character from both peptide sequences if it is K, otherwise, leave it alone
+				string firstPeptideString = firstPeptide.SequenceOneLetter;
+				string secondPeptideString = secondPeptide.SequenceOneLetter;
+				if (firstPeptideString.Last() == 'K')
+				{
+					firstPeptideString = firstPeptideString.Substring(0, firstPeptideString.Length - 1);
+				}
+				if (secondPeptideString.Last() == 'K')
+				{
+					secondPeptideString = secondPeptideString.Substring(0, secondPeptideString.Length - 1);
+				}
 
-				// Then count the number of Lysines in each sequence
-				int firstPeptideNumLysines = firstPeptideString.Count(c => c == 'K');
-				int secondPeptideNumLysines = secondPeptideString.Count(c => c == 'K');
+				// Then count the number of Cross-Link characters in each sequence
+				int firstPeptideNumCrossLinkCharacters = firstPeptideString.Count(m_crossLinkCharacters.Contains);
+				int secondPeptideNumCrossLinkCharacters = secondPeptideString.Count(m_crossLinkCharacters.Contains);
 				
 				// If we are dealing with the peptide located at the very beginning of the protein sequence, then pretend we have an extra Lysine since we can cross-link with the first amino acid
 				if (proteinSequence.StartsWith(firstPeptideString))
 				{
-					firstPeptideNumLysines++;
+					firstPeptideNumCrossLinkCharacters++;
 				}
 				if (proteinSequence.StartsWith(secondPeptideString))
 				{
-					secondPeptideNumLysines++;
+					secondPeptideNumCrossLinkCharacters++;
 				}
 
 				// If either peptide does not have a Lysine, then no cross-link is possible; exit
-				if (firstPeptideNumLysines == 0 || secondPeptideNumLysines == 0)
+				if (firstPeptideNumCrossLinkCharacters == 0 || secondPeptideNumCrossLinkCharacters == 0)
 				{
 					return crossLinkList;
 				}
 
 				// Add up the number of Lysines
-				int numLysines = firstPeptideNumLysines + secondPeptideNumLysines;
+				int numLysines = firstPeptideNumCrossLinkCharacters + secondPeptideNumCrossLinkCharacters;
 
 				for (int i = 1; i <= numLysines / 2; i++)
 				{
