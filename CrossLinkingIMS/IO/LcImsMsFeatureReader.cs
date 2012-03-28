@@ -113,7 +113,10 @@ namespace CrossLinkingIMS.IO
 			if (columnMapping.ContainsKey(LC_SCAN_START)) lcImsMsFeature.ScanLcStart = int.Parse(columns[columnMapping[LC_SCAN_START]]);
 			if (columnMapping.ContainsKey(LC_SCAN_END)) lcImsMsFeature.ScanLcEnd = int.Parse(columns[columnMapping[LC_SCAN_END]]);
 			if (columnMapping.ContainsKey(LC_SCAN_REP)) lcImsMsFeature.ScanLcRep = int.Parse(columns[columnMapping[LC_SCAN_REP]]);
-			if (columnMapping.ContainsKey(IMS_SCAN_REP)) lcImsMsFeature.ScanImsRep = int.Parse(columns[columnMapping[IMS_SCAN_REP]]);
+
+			// Need to subtract 1 because the isos file reports the IMS Scan as 1-based and the peaks file reports it as 0-based. Need to get Slysz to fix that.
+			if (columnMapping.ContainsKey(IMS_SCAN_REP)) lcImsMsFeature.ScanImsRep = int.Parse(columns[columnMapping[IMS_SCAN_REP]]) - 1;
+
 			if (columnMapping.ContainsKey(CHARGE_STATE)) lcImsMsFeature.ChargeState = int.Parse(columns[columnMapping[CHARGE_STATE]]);
 			if (columnMapping.ContainsKey(DRIFT_TIME)) lcImsMsFeature.DriftTime = double.Parse(columns[columnMapping[DRIFT_TIME]]);
 			if (columnMapping.ContainsKey(ABUNDANCE)) lcImsMsFeature.Abundance = double.Parse(columns[columnMapping[ABUNDANCE]]);
