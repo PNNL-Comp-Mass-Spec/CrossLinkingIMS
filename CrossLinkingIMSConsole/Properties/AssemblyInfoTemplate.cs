@@ -31,4 +31,4 @@ using System.Runtime.InteropServices;
 //
 // To edit the assembly version, make sure to edit the AssemblyInfoTemplate.cs file
 // The template file will overwrite the AssemblyInfo.cs file every build
-[assembly: AssemblyVersion("1.2.$WCREV$.*")]
+[assembly: AssemblyVersion("1.3.$WCREV$.*")]
