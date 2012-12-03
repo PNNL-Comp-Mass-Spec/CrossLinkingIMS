@@ -88,9 +88,17 @@ namespace CrossLinkingIMSConsole
 
 			double massTolerance = double.Parse(massToleranceString);
 
-			// Run the cross-linking application
-			Console.WriteLine("Executing...");
-			IEnumerable<CrossLinkResult> crossLinkResults = CrossLinkingImsController.Execute(massTolerance, fastAFile, featureFile, peaksFile);
+			// Get the Max Missed Cleavages
+			string maxMissedCleavagesString = "1";
+			commandLineUtil.RetrieveValueForParameter("c", out maxMissedCleavagesString);
+
+			int maxMissedCleavages = int.Parse(maxMissedCleavagesString);
+
+			// Get the Partially Tryptic Flag
+			string trypticString = "full";
+			commandLineUtil.RetrieveValueForParameter("t", out trypticString);
+
+			CrossLinkSettings settings = new CrossLinkSettings(massTolerance, maxMissedCleavages, trypticString);
 
 			// Get the Output File Location
 			string outputFileLocation = "";
@@ -98,6 +106,10 @@ namespace CrossLinkingIMSConsole
 			{
 				outputFileLocation = "crossLinkResults.csv";
 			}
+
+			// Run the cross-linking application
+			Console.WriteLine("Executing...");
+			IEnumerable<CrossLinkResult> crossLinkResults = CrossLinkingImsController.Execute(settings, fastAFile, featureFile, peaksFile);
 
 			FileInfo outputFileInfo = new FileInfo(outputFileLocation);
 
@@ -122,6 +134,8 @@ namespace CrossLinkingIMSConsole
 			Console.WriteLine();
 			Console.WriteLine("*********OPTIONAL ARGUMENTS ***********");
 			Console.WriteLine();
+			Console.WriteLine(" -c: The maximum number of missed cleavages to consider. Defaults to 1.");
+			Console.WriteLine(" -t: Set to 'full' for fully tryptic only. Set to 'partial' to consider partially and fully tryptic. Set to 'none' to consider non, partially, and fully tryptic. Defaults to 'full'.");
 			Console.WriteLine(" -o: The desired location and name for the output file. Defaults to workingDirectory/crossLinkResults.csv");
 			Console.WriteLine(" -debug : Display detailed debug messages during iteration. (NOT YET IMPLEMENTED)");
 			Console.WriteLine("");

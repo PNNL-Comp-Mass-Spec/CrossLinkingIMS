@@ -231,6 +231,28 @@ namespace CrossLinkingIMS.Util
 			return crossLinkList;
 		}
 
+		public static void OutputCrossLinks(IEnumerable<CrossLink> crossLinkEnumerable, FileInfo outputFileInfo)
+		{
+			TextWriter crossLinkWriter = new StreamWriter(outputFileInfo.FullName);
+			crossLinkWriter.WriteLine("Index,Protein,Pep1,Pep2,ModType,TheoreticalMass");
+			int index = 0;
+
+			foreach (CrossLink crossLink in crossLinkEnumerable)
+			{
+				StringBuilder outputLine = new StringBuilder();
+				outputLine.Append(index++ + ",");
+				outputLine.Append(crossLink.ProteinId + ",");
+				outputLine.Append(crossLink.PeptideOne.SequenceOneLetter + ",");
+				outputLine.Append((crossLink.PeptideTwo != null ? crossLink.PeptideTwo.SequenceOneLetter : "null") + ",");
+				outputLine.Append(crossLink.ModType + ",");
+				outputLine.Append(crossLink.Mass + "\n");
+
+				crossLinkWriter.Write(outputLine);
+			}
+
+			crossLinkWriter.Close();
+		}
+
 		/// <summary>
 		/// Writes the results of cross-link searching to a csv file.
 		/// </summary>

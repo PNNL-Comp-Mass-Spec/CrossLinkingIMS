@@ -72,6 +72,7 @@
     <Compile Include="Data\AminoAcid.cs" />
     <Compile Include="Data\CrossLink.cs" />
     <Compile Include="Data\CrossLinkResult.cs" />
+    <Compile Include="Data\CrossLinkSettings.cs" />
     <Compile Include="Data\IsotopicPeak.cs" />
     <Compile Include="Data\LcImsMsFeature.cs" />
     <Compile Include="Data\MassShiftResult.cs" />

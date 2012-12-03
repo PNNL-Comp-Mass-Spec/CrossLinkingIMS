@@ -21,12 +21,12 @@ namespace CrossLinkingIMS.Control
 		/// <summary>
 		/// Executes the cross-link search for LC-IMS-TOF data.
 		/// </summary>
-		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
+		/// <param name="settings">Settings object to control parameters for cross-linking.</param>
 		/// <param name="fastAFile">The FileInfo object for the FASTA file containg all protein sequences you want to search.</param>
 		/// <param name="featureFile">The FileInfo object for the LC-IMS-MS features file, created by the LC-IMS-MS Feature Finder. (email Kevin.Crowell@pnnl.gov for more info)</param>
 		/// <param name="peaksFile">The FileInfo object for the Isotopic Peaks file, created by DeconTools. (email Gordon.Slysz@pnnl.gov for more info)</param>
 		/// <returns>An enumerable of CrossLinkResult objects.</returns>
-		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, FileInfo fastAFile, FileInfo featureFile, FileInfo peaksFile)
+		public static IEnumerable<CrossLinkResult> Execute(CrossLinkSettings settings, FileInfo fastAFile, FileInfo featureFile, FileInfo peaksFile)
 		{
 			// Read in FASTA File
 			FastAParser fastAParser = new FastAParser(fastAFile.FullName);
@@ -39,19 +39,23 @@ namespace CrossLinkingIMS.Control
 			List<IsotopicPeak> peakEnumerable = IsotopicPeakReader.ReadFile(peaksFile);
 
 			// Now call the executor that expects the opbjects instead of the file locations
-			return Execute(massToleranceBase, sequenceEnumerable, featureList, peakEnumerable);
+			return Execute(settings, sequenceEnumerable, featureList, peakEnumerable);
 		}
 
 		/// <summary>
 		/// Executes the cross-link search for LC-IMS-TOF data.
 		/// </summary>
-		/// <param name="massToleranceBase">Mass tolerance of instrument, in ppm.</param>
+		/// <param name="settings">Settings object to control parameters for cross-linking.</param>
 		/// <param name="proteinSequenceEnumerable">IEnumerable of protein sequences, as a .NET Bio ISequence object.</param>
 		/// <param name="featureList">List of LC-IMS-MS Features, as LcImsMsFeature.</param>
 		/// <param name="peakList">List of Isotopic Peaks, as IsotopicPeak.</param>
 		/// <returns>An enumerable of CrossLinkResult objects.</returns>
-		public static IEnumerable<CrossLinkResult> Execute(double massToleranceBase, IEnumerable<ISequence> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<IsotopicPeak> peakList)
+		public static IEnumerable<CrossLinkResult> Execute(CrossLinkSettings settings, IEnumerable<ISequence> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<IsotopicPeak> peakList)
 		{
+			double massToleranceBase = settings.MassTolerance;
+			int maxMissedCleavages = settings.MaxMissedCleavages;
+			clsInSilicoDigest.CleavageRuleConstants digestionRule = settings.TrypticType;
+
 			// Used for finding Isotopic Profiles in the data
 			BasicTFF msFeatureFinder = new BasicTFF();
 
@@ -64,7 +68,7 @@ namespace CrossLinkingIMS.Control
 				string proteinId = proteinSequence.ID;
 
 				// Get a List of Peptides from the Protein Sequence
-				IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequenceString);
+				IEnumerable<clsInSilicoDigest.PeptideInfoClass> peptideList = SequenceUtil.DigestProtein(proteinSequenceString, digestionRule, maxMissedCleavages);
 
 				// Find all possible cross links from the peptide list
 				IEnumerable<CrossLink> crossLinkEnumerable = CrossLinkUtil.GenerateTheoreticalCrossLinks(peptideList, proteinSequenceString, proteinId);

@@ -17,8 +17,10 @@ namespace CrossLinkingIMS.Util
 		/// Assumes conventional trypsin digest and max 1 missed cleavage.
 		/// </summary>
 		/// <param name="proteinSequence">The protein sequence to digest.</param>
+		/// <param name="digestionRule">Determines which digestion rule to use (fully tryptic, partially tryptic, no rules).</param>
+		/// <param name="maxMissedCleavages">The maximum number of missed cleavages to consider.</param>
 		/// <returns>An IEnumerable of Peptide objects.</returns>
-		public static IEnumerable<clsInSilicoDigest.PeptideInfoClass> DigestProtein(string proteinSequence)
+		public static IEnumerable<clsInSilicoDigest.PeptideInfoClass> DigestProtein(string proteinSequence, clsInSilicoDigest.CleavageRuleConstants digestionRule, int maxMissedCleavages)
 		{
 			clsParseProteinFile parseProteinFile = new clsParseProteinFile
 			{
@@ -32,10 +34,10 @@ namespace CrossLinkingIMS.Util
 
 			clsInSilicoDigest.PeptideInfoClass[] peptideArray = new clsInSilicoDigest.PeptideInfoClass[1];
 
-			clsInSilicoDigest.DigestionOptionsClass digestionOptions = new clsInSilicoDigest.DigestionOptionsClass
+			clsInSilicoDigest.DigestionOptionsClass digestionOptions = new clsInSilicoDigest.DigestionOptionsClass 
 			{
-				CleavageRuleID = clsInSilicoDigest.CleavageRuleConstants.ConventionalTrypsin,
-				MaxMissedCleavages = 1
+				CleavageRuleID = digestionRule,
+				MaxMissedCleavages = maxMissedCleavages
 			};
 
 			parseProteinFile.DigestProteinSequence(proteinSequence, ref peptideArray, digestionOptions, "xlinkProt");
