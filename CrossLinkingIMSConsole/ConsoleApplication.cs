@@ -143,7 +143,10 @@ namespace CrossLinkingIMSConsole
                 string outputFileLocation;
                 if (!commandLineUtil.RetrieveValueForParameter("o", out outputFileLocation))
                 {
-                    outputFileLocation = "crossLinkResults.csv";
+                    if (featureFile.DirectoryName != null && featureFile.DirectoryName == peaksFile.DirectoryName)
+                        outputFileLocation = Path.Combine(featureFile.DirectoryName, "crossLinkResults.csv");
+                    else
+                        outputFileLocation = "crossLinkResults.csv";
                 }
 
                 // Run the cross-linking application
