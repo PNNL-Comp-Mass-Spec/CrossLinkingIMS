@@ -52,14 +52,14 @@ namespace CrossLinkingIMS.IO
 		/// </summary>
 		/// <param name="columnString">The header row of the input file, as a string.</param>
 		/// <returns>A Dictionary object containing the mapping between the headers and their column number position.</returns>
-		private static Dictionary<string, int> CreateColumnMapping(String columnString)
+		private static Dictionary<string, int> CreateColumnMapping(string columnString)
 		{
 			Dictionary<string, int> columnMap = new Dictionary<string, int>();
 			string[] columnTitles = columnString.Split('\t', ',', '\n');
 
 			for (int i = 0; i < columnTitles.Count(); i++)
 			{
-				String columnTitle = columnTitles[i];
+				string columnTitle = columnTitles[i];
 
 				switch (columnTitle)
 				{
@@ -102,7 +102,7 @@ namespace CrossLinkingIMS.IO
 		/// <param name="line">The line to read, as a string.</param>
 		/// <param name="columnMapping">The column mapping for the input file.</param>
 		/// <returns>A single LcImsMsFeature object created by using the information from the parsed line.</returns>
-		private static LcImsMsFeature ParseLine(String line, IDictionary<string, int> columnMapping)
+		private static LcImsMsFeature ParseLine(string line, IDictionary<string, int> columnMapping)
 		{
 			string[] columns = line.Split('\t');
 
