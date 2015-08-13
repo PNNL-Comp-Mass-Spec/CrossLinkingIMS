@@ -22,7 +22,7 @@ namespace CrossLinkingIMSConsole
 
         private const uint ENABLE_EXTENDED_FLAGS = 0x0080;
 
-        private const string PROGRAM_DATE = "August 12, 2015";
+        private const string PROGRAM_DATE = "August 13, 2015";
 
         static int Main(string[] args)
         {

@@ -1,0 +1,11 @@
+CrossLinkingIMS Change Log
+
+Version 1.3.5703; August 13, 2015
+	- Now allowing DeconTools abundance values to be fractional numbers (were previously always integers)
+
+Version 1.3.5703; August 13, 2015
+	- Add switches -C13off and -N15off
+	- Update to support new DeconTools column names
+
+Version 1.3; June 6, 2012
+	- Stable release
