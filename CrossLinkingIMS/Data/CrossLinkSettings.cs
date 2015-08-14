@@ -23,6 +23,10 @@ namespace CrossLinkingIMS.Data
 		/// </summary>
 		public int MaxMissedCleavages { get; private set; }
 
+        /// <summary>
+        /// Fixed (static) mass difference
+        /// </summary>
+        public double StaticDeltaMass { get; set; }
 	    
         /// <summary>
         /// When True, crosslinked peptides have C13 labeling
@@ -40,15 +44,17 @@ namespace CrossLinkingIMS.Data
 	    /// <param name="massTolerance">The mass tolerance in ppm</param>
 	    /// <param name="maxMissedCleavages">The maximum number of missed cleavages to consider during digestion</param>
 	    /// <param name="trypticString">The trypsin digestion rule (fully tryptic, partially tryptic, no rules)</param>
-        /// <param name="useC13"> When True, crosslinked peptides have C13 labeling</param>
-        /// <param name="useN15"> When True, crosslinked peptides have N15 labeling</param>
-	    public CrossLinkSettings(double massTolerance, int maxMissedCleavages, string trypticString, bool useC13, bool useN15)
+	    /// <param name="useC13"> When True, crosslinked peptides have C13 labeling</param>
+	    /// <param name="useN15"> When True, crosslinked peptides have N15 labeling</param>
+        /// <param name="staticDeltaMass">Fixed (static) mass difference</param>
+	    public CrossLinkSettings(double massTolerance, int maxMissedCleavages, string trypticString, bool useC13, bool useN15, double staticDeltaMass)
 		{
 			this.MassTolerance = massTolerance;
 			this.MaxMissedCleavages = maxMissedCleavages;
 
 	        this.UseC13 = useC13;
 	        this.UseN15 = useN15;
+	        this.StaticDeltaMass = staticDeltaMass;
 
 			if(trypticString == null || trypticString.Equals("full"))
 			{

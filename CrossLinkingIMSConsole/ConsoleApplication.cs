@@ -22,7 +22,7 @@ namespace CrossLinkingIMSConsole
 
         private const uint ENABLE_EXTENDED_FLAGS = 0x0080;
 
-        private const string PROGRAM_DATE = "August 13, 2015";
+        private const string PROGRAM_DATE = "August 14, 2015";
 
         static int Main(string[] args)
         {
@@ -121,23 +121,30 @@ namespace CrossLinkingIMSConsole
                 string trypticString;
                 commandLineUtil.RetrieveValueForParameter("t", out trypticString);
 
+                string staticDeltaMassString;
+                var staticDeltaMass = 0.0;
+                if (commandLineUtil.RetrieveValueForParameter("static", out staticDeltaMassString))
+                {
+                    double.TryParse(staticDeltaMassString, out staticDeltaMass);
+                }
+
                 var useC13 = true;
                 var useN15 = true;
-
+            
                 if (commandLineUtil.IsParameterPresent("c13off"))
                     useC13 = false;
 
                 if (commandLineUtil.IsParameterPresent("n15off"))
                     useN15 = false;
 
-                if (!(useC13 || useN15))
+                if (!(useC13 || useN15) && Math.Abs(staticDeltaMass) < float.Epsilon)
                 {
-                    Console.WriteLine("You cannot use both -C13off and -N15off; there would be no mass shift");
+                    Console.WriteLine("If you use both -C13off and -N15off, you must use -Static:MassDiff to specify a static mass difference");
                     Thread.Sleep(1500);
                     return -3;
                 }
 
-                var settings = new CrossLinkSettings(massTolerance, maxMissedCleavages, trypticString, useC13, useN15);
+                var settings = new CrossLinkSettings(massTolerance, maxMissedCleavages, trypticString, useC13, useN15, staticDeltaMass);
 
                 // Get the Output File Location
                 string outputFileLocation;
@@ -195,31 +202,43 @@ namespace CrossLinkingIMSConsole
 
         private static void ShowSyntax()
         {
+            var exeName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+
             Console.WriteLine();
             Console.WriteLine("Program syntax:");
-            Console.WriteLine(Path.GetFileName(Assembly.GetExecutingAssembly().Location));
-            Console.WriteLine("CrossLinkingIMSConsole.exe -f [Features File] -p [Peaks File] -fasta [FastA file] -ppm Value [optional arguments]");
+            Console.WriteLine(exeName + "-f [Features File] -p [Peaks File] -fasta [FastA file] -ppm Value [optional arguments]");
             Console.WriteLine();
             Console.WriteLine("*********REQUIRED ARGUMENTS ***********");
             Console.WriteLine();
-            Console.WriteLine(" -f: Features File. LC-IMS-MS Feature Finder Output. See README.");
-            Console.WriteLine(" -p: Peaks File. DeconTools Output. See README");
-            Console.WriteLine(" -fasta: FastA File. Contains all protein sequences to search.");
-            Console.WriteLine(" -ppm [value] : Mass tolerance in ppm");
+            Console.WriteLine(" -f        Features File. LC-IMS-MS Feature Finder Output. See README.");
+            Console.WriteLine(" -p        Peaks File. DeconTools Output. See README");
+            Console.WriteLine(" -fasta    FastA File. Contains all protein sequences to search.");
+            Console.WriteLine(" -ppm [value]   Mass tolerance in ppm");
             Console.WriteLine();
             Console.WriteLine("*********OPTIONAL ARGUMENTS ***********");
             Console.WriteLine();
-            Console.WriteLine(" -c: The maximum number of missed cleavages to consider. Defaults to 1.");
-            Console.WriteLine(" -t: Set to 'full' for fully tryptic only. ");
-            Console.WriteLine("     Set to 'partial' to consider partially and fully tryptic.");
-            Console.WriteLine("     Set to 'none' to consider non, partially, and fully tryptic.");
-            Console.WriteLine("     Defaults to 'full'.");
-            Console.WriteLine(" -o: The desired location and name for the output file. Defaults to workingDirectory/crossLinkResults.csv");
-            Console.WriteLine(" -C13off: Peptides are not labeled with C13");
-            Console.WriteLine(" -N15off: Peptides are not labeled with N15");
-            // Console.WriteLine(" -debug : Display detailed debug messages during iteration. (NOT YET IMPLEMENTED)");
+            Console.WriteLine(" -c   The maximum number of missed cleavages to consider. Defaults to 1.");
+            Console.WriteLine(" -t:  Set to 'full' for fully tryptic only. ");
+            Console.WriteLine("      Set to 'partial' to consider partially and fully tryptic.");
+            Console.WriteLine("      Set to 'none' to consider non, partially, and fully tryptic.");
+            Console.WriteLine("      Defaults to 'full'.");
+            Console.WriteLine(" -o   The desired location and name for the output file. Defaults to workingDirectory/crossLinkResults.csv");
             Console.WriteLine();
-
+            Console.WriteLine("Crosslinked peptide pairs are found using a delta mass value that is");
+            Console.WriteLine("typically computed based on the number of carbons and number of nitrogen atoms,");
+            Console.WriteLine("treating carbons in the crosslinked peptide as C13 and nitrogens as N15.");
+            Console.WriteLine("Alter this behavior using switches -C13off, -N15off, and -Static"); 
+            Console.WriteLine(" -C13off   Peptides are not labeled with C13");
+            Console.WriteLine(" -N15off   Peptides are not labeled with N15");
+            Console.WriteLine(" -Static:[Value]   Static (fixed) mass shift to use for all paired peptides");
+            Console.WriteLine();
+            Console.WriteLine("For example, to disable C13 and N15 shifts and only use a ");
+            Console.WriteLine("fixed shift of 25.5 Da, your command line would look like this:");
+            Console.WriteLine();
+            Console.WriteLine(exeName);
+            Console.WriteLine(" -f Dataset_LCMSFeatures.txt -p Dataset_Filtered_isos.csv -fasta Database.fasta");
+            Console.WriteLine(" -ppm 10 -C13Off -N15off -Static:25.5");
+            Console.WriteLine();
             Console.WriteLine("Program written by Kevin Crowell for the Department of Energy (PNNL, Richland, WA) in 2011");
             Console.WriteLine("Version: " + GetAppVersion());
 

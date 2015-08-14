@@ -15,13 +15,23 @@ namespace CrossLinkingIMS.Util
     /// </summary>
     public class CrossLinkUtil
     {
+        /// <summary>
+        /// Fixed (static) mass difference
+        /// </summary>
+        public static double StaticDeltaMass { get; set; }
 
+        /// <summary>
+        /// When true, add a mass difference based on the number of carbon atoms 
+        /// </summary>
         public static bool UseC13 
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// When true, add a mass difference based on the number of nitrogen atoms 
+        /// </summary>
         public static bool UseN15 
         {
             get;
@@ -121,6 +131,9 @@ namespace CrossLinkingIMS.Util
 
             if (UseN15)
                 delMass += (numNitrogen * (IsotopeConstants.NITROGEN_15_ISOTOPE - IsotopeConstants.NITROGEN_14_ISOTOPE));
+
+            if (Math.Abs(StaticDeltaMass) > float.Epsilon)
+                delMass += StaticDeltaMass;
 
             return delMass;
 

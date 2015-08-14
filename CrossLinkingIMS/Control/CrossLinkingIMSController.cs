@@ -80,12 +80,17 @@ namespace CrossLinkingIMS.Control
         /// <param name="featureList">List of LC-IMS-MS Features, as LcImsMsFeature.</param>
         /// <param name="peakList">List of Isotopic Peaks, as IsotopicPeak.</param>
         /// <returns>An enumerable of CrossLinkResult objects.</returns>
-        public static IList<CrossLinkResult> Execute(CrossLinkSettings settings, IEnumerable<ISequence> proteinSequenceEnumerable, List<LcImsMsFeature> featureList, List<IsotopicPeak> peakList)
+        public static IList<CrossLinkResult> Execute(
+            CrossLinkSettings settings, 
+            IEnumerable<ISequence> proteinSequenceEnumerable, 
+            List<LcImsMsFeature> featureList, 
+            List<IsotopicPeak> peakList)
         {
             var massToleranceBase = settings.MassTolerance;
             var maxMissedCleavages = settings.MaxMissedCleavages;
             var digestionRule = settings.TrypticType;
 
+            CrossLinkUtil.StaticDeltaMass = settings.StaticDeltaMass;
             CrossLinkUtil.UseC13 = settings.UseC13;
             CrossLinkUtil.UseN15 = settings.UseN15;
 
