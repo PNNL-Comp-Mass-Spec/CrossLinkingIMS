@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Bio;
 using Bio.IO.FastA;
 using CrossLinkingIMS.Constants;
@@ -32,13 +33,16 @@ namespace CrossLinkingIMS.Control
             IEnumerable<ISequence> sequenceEnumerable;
             List<LcImsMsFeature> featureList;
             List<IsotopicPeak> peakEnumerable;
- 
+
+            Console.WriteLine();
+
             try
             {
 
                 // Read in FASTA File
                 var fastAParser = new FastAParser(fastAFile.FullName);
                 sequenceEnumerable = fastAParser.Parse();
+                Console.WriteLine("FASTA file:     " + GetRelativePath(fastAFile.FullName));
             }
             catch (Exception ex)
             {
@@ -50,6 +54,7 @@ namespace CrossLinkingIMS.Control
             {
                 // Read in LC-IMS-MS Features
                 featureList = LcImsMsFeatureReader.ReadFile(featureFile);
+                Console.WriteLine("Features file:  " + GetRelativePath(featureFile.FullName));
             }
             catch (Exception ex)
             {
@@ -61,6 +66,7 @@ namespace CrossLinkingIMS.Control
             {
                 // Read in Isotopic Peaks (not Isotopic Profile)
                 peakEnumerable = IsotopicPeakReader.ReadFile(peaksFile);
+                Console.WriteLine("Peaks file:     " + GetRelativePath(peaksFile.FullName));
             }
             catch (Exception ex)
             {
@@ -94,8 +100,16 @@ namespace CrossLinkingIMS.Control
             CrossLinkUtil.UseC13 = settings.UseC13;
             CrossLinkUtil.UseN15 = settings.UseN15;
 
+            Console.WriteLine();
+            Console.WriteLine("Mass Tolerance:          " + massToleranceBase + " ppm");
+            Console.WriteLine("Max missed cleavages:    " + maxMissedCleavages);
+            Console.WriteLine("Digestion rule:          " + settings.TrypticType );
+            Console.WriteLine("Delta mass uses C13:     " + settings.UseC13);
+            Console.WriteLine("Delta mass uses N15:     " + settings.UseN15);
+            Console.WriteLine("Static delta mass addon: " + settings.StaticDeltaMass + " Da");
+
             // Used for finding Isotopic Profiles in the data
-            var msFeatureFinder = new BasicTFF();
+                var msFeatureFinder = new BasicTFF();
 
             var crossLinkList = new List<CrossLink>();
             var lastProgress = DateTime.UtcNow;
@@ -270,5 +284,19 @@ namespace CrossLinkingIMS.Control
 
             return crossLinkResultList;
         }
+            
+        private static string GetRelativePath(string filePath)
+        {
+            var fiFile = new FileInfo(filePath);
+            var fiAssembly = new FileInfo(Assembly.GetExecutingAssembly().Location);
+
+            if (fiAssembly.DirectoryName != null && fiFile.FullName.StartsWith(fiAssembly.DirectoryName))
+            {
+                return fiFile.FullName.Substring(fiAssembly.DirectoryName.Length + 1);
+            }
+            
+            return fiFile.FullName;
+        }
+
     }
 }
